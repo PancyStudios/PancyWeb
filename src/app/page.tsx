@@ -23,17 +23,12 @@ export default function Home() {
 					<div className="hidden md:flex gap-8 text-sm font-medium text-gray-400">
 						<Link href="#musica" className="hover:text-cyan-400 transition-colors">Sonido</Link>
 						<Link href="#economia" className="hover:text-fuchsia-400 transition-colors">Economía</Link>
-						<Link href="/dashboard" className="hover:text-purple-400 transition-colors flex items-center gap-2">
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-							Dashboard
-						</Link>
 					</div>
 
 					<div className="flex items-center gap-4">
 						{/* Aquí integramos el botón inteligente */}
 						<UserButton />
-
-						<a href="https://discord.com/api/oauth2/authorize?client_id=796650479673147422&permissions=8&scope=bot%20applications.commands"
+						<a href="https://discord.com/oauth2/authorize?client_id=801873281975975968"
 						   className="hidden sm:flex btn-cosmic text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-purple-500/30 transition-transform hover:scale-105">
 							Invitar
 						</a>
@@ -56,7 +51,7 @@ export default function Home() {
 							Aterriza en la mejor experiencia de Discord. Música Hi-Fi desde Deezer, economía intergaláctica y moderación de grado militar. Todo en una sola nave.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-							<a href="https://discord.com/api/oauth2/authorize?client_id=796650479673147422&permissions=8&scope=bot%20applications.commands"
+							<a href="https://discord.com/oauth2/authorize?client_id=801873281975975968"
 							   className="btn-cosmic text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-transform hover:-translate-y-1 text-center">
 								🚀 Despegar ahora
 							</a>
