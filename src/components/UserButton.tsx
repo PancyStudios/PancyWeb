@@ -36,7 +36,7 @@ export default function UserButton() {
 
 	const handleLogout = () => {
 		// Redirigimos a la ruta de logout que limpia la cookie y nos devuelve al inicio
-		fetch("https://api.pancy.miau.media/api/logout", {}).then(() => {
+		fetch("https://api.pancy.miau.media/api/auth/logout", {}).then(() => {
 			window.location.reload();
 		}).finally(() => { console.log("Logout successful"); });
 	};
