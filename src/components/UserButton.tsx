@@ -31,12 +31,14 @@ export default function UserButton() {
 			}
 		};
 
-		checkSession();
+		checkSession().then(() => {});
 	}, []);
 
 	const handleLogout = () => {
 		// Redirigimos a la ruta de logout que limpia la cookie y nos devuelve al inicio
-		window.location.href = "https://api.pancy.miau.media/api/auth/logout?redirect=https://pancybot.miau.media/";
+		fetch("https://api.pancy.miau.media/api/logout", {}).then(() => {
+			window.location.reload();
+		}).finally(() => { console.log("Logout successful"); });
 	};
 
 	if (isLoading) {
