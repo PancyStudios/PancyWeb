@@ -32,7 +32,7 @@ export default function Home() {
 						<Link href="/dashboard" className="text-gray-300 hover:text-white text-sm font-bold border border-white/10 px-4 py-2 rounded-lg hover:bg-white/5 transition-all">
 							Login
 						</Link>
-						<a href="https://discord.com/api/oauth2/authorize?client_id=796650479673147422&permissions=8&scope=bot%20applications.commands"
+						<a href="https://discord.com/oauth2/authorize?client_id=801873281975975968"
 						   className="hidden sm:flex btn-cosmic text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-purple-500/30 transition-transform hover:scale-105">
 							Invitar
 						</a>
