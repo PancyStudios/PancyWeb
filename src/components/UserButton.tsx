@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import {cookies} from "next/headers";
 
 export default function UserButton() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,7 +35,9 @@ export default function UserButton() {
 		checkSession().then(() => {});
 	}, []);
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
+		const cookieStore = await cookies();
+		cookieStore.delete("connect.sid");
 		window.location.href = "https://api.pancy.miau.media/api/auth/logout?redirect=https://pancybot.miau.media/";
 	};
 
