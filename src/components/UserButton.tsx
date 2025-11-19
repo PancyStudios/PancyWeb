@@ -1,8 +1,6 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {cookies} from "next/headers";
 
 export default function UserButton() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,7 +13,7 @@ export default function UserButton() {
 				const response = await fetch("https://api.pancy.miau.media/api/users/avatar", {
 					method: "GET",
 					credentials: "include",
-				}).catch(() => {});
+				}).catch(() => { console.log('Not Logged In'); });
 
 				if (response?.ok) {
 					const data = await response.json();
@@ -36,8 +34,8 @@ export default function UserButton() {
 	}, []);
 
 	const handleLogout = async () => {
-		const cookieStore = await cookies();
-		cookieStore.delete("connect.sid");
+		document.cookie = "connect.sid=; path=/; domain=.miau.media; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+		document.cookie = "connect.sid=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 		window.location.href = "https://api.pancy.miau.media/api/auth/logout?redirect=https://pancybot.miau.media/";
 	};
 
