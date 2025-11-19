@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Minior Fix">
+    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Update Minior">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/UserButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/UserButton.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +94,7 @@
       <workItem from="1763525716431" duration="529000" />
       <workItem from="1763526868046" duration="340000" />
       <workItem from="1763531644345" duration="5852000" />
-      <workItem from="1763556053403" duration="4241000" />
+      <workItem from="1763556053403" duration="4550000" />
     </task>
     <task id="LOCAL-00001" summary="ToS, Privacity and Other changes">
       <option name="closed" value="true" />
@@ -133,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763559621446</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Update Minior">
+      <option name="closed" value="true" />
+      <created>1763560857768</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1763560857768</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,6 +167,7 @@
     <MESSAGE value="Filter Ip" />
     <MESSAGE value="Minior Update" />
     <MESSAGE value="Minior Fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minior Fix" />
+    <MESSAGE value="Update Minior" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Minior" />
   </component>
 </project>
