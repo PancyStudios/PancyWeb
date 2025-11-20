@@ -49,7 +49,8 @@ export default function DashboardPage() {
 			try {
 				const opts: RequestInit = {
 					headers: {'Content-Type': 'application/json'},
-					credentials: 'include'
+					credentials: 'include',
+					method: 'GET'
 				};
 
 				const [userRes, premiumRes] = await Promise.all([
@@ -74,11 +75,12 @@ export default function DashboardPage() {
 				const invitableRes = await fetch(`${API_BASE}/api/guilds/notfound`, opts);
 
 				if (invitableRes.ok) setInvitableGuilds(await invitableRes.json());
+
+				setLoading(false);
 			} catch (err) {
 				console.error(err);
 			}
 		};
-
 		fetchData();
 	}, []);
 
