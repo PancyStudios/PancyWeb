@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Test New Dashboard">
+    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Dynamic Update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/[guildId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/[guildId]/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +25,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -89,7 +90,7 @@
       <workItem from="1763525716431" duration="529000" />
       <workItem from="1763526868046" duration="340000" />
       <workItem from="1763531644345" duration="5852000" />
-      <workItem from="1763556053403" duration="24198000" />
+      <workItem from="1763556053403" duration="38328000" />
     </task>
     <task id="LOCAL-00001" summary="ToS, Privacity and Other changes">
       <option name="closed" value="true" />
@@ -219,7 +220,23 @@
       <option name="project" value="LOCAL" />
       <updated>1763598022231</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Dynamic URL API">
+      <option name="closed" value="true" />
+      <created>1763598799095</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1763598799095</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Dynamic Update">
+      <option name="closed" value="true" />
+      <created>1763615698547</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1763615698547</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,6 +265,8 @@
     <MESSAGE value="Fix Logout Link 2" />
     <MESSAGE value="Cookie Logout Fix" />
     <MESSAGE value="Test New Dashboard" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test New Dashboard" />
+    <MESSAGE value="Dynamic URL API" />
+    <MESSAGE value="Dynamic Update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Dynamic Update" />
   </component>
 </project>

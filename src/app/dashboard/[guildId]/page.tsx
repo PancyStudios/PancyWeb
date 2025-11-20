@@ -13,7 +13,9 @@ import {
 	Crown,
 	Users,
 	Hash,
-	CaretRight
+	CaretRight,
+	CaretDown,
+	Check
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -28,11 +30,33 @@ interface GuildDetails {
 	banner: string | null;
 }
 
+interface GuildSimple {
+	id: string;
+	name: string;
+	icon: string | null;
+}
+
 interface UserData {
 	username: string;
 	avatar: string;
+	id: string;
 }
 
+// Interfaz para la respuesta del avatar
+interface AvatarResponse {
+	avatarURL: string;
+}
+
+// Interfaz para el estado Premium
+interface UserPremium {
+	_id: string | null;
+	User: string;
+	Permanent: boolean | null;
+	Expira: number | null;
+	isActive?: boolean;
+}
+
+// --- CONFIGURACIÓN ---
 const API_BASE = "https://api.pancy.miau.media";
 
 export default function ServerDashboardPage() {
@@ -40,25 +64,35 @@ export default function ServerDashboardPage() {
 	const guildId = params.guildId as string;
 
 	const [guild, setGuild] = useState<GuildDetails | null>(null);
+	const [serverList, setServerList] = useState<GuildSimple[]>([]);
 	const [userData, setUserData] = useState<UserData | null>(null);
+	const [userPremium, setUserPremium] = useState<UserPremium | null>(null); // Estado Premium
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null); // Estado para la URL del avatar
+
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const opts: RequestInit = {
 					headers: { 'Content-Type': 'application/json' },
-					credentials: 'include'
+					credentials: 'include',
+					method: 'GET'
 				};
 
-				// 1. Pedimos info del servidor y del usuario en paralelo
-				const [guildRes, userRes] = await Promise.all([
-					fetch(`${API_BASE}/api/guilds/${guildId}/info`, opts),
-					fetch(`${API_BASE}/api/users`, opts)
+				// 1. Peticiones en paralelo
+				const [guildRes, userRes, listRes, premiumRes, avatarRes] = await Promise.all([
+					fetch(`${API_BASE}/api/guilds/${guildId}/info`, opts), // Info del Server
+					fetch(`${API_BASE}/api/users`, opts),                  // Info del User (nombre)
+					fetch(`${API_BASE}/api/guilds`, opts),                 // Lista para el selector
+					fetch(`${API_BASE}/api/users/premium`, opts),          // Estado Premium
+					fetch(`${API_BASE}/api/users/avatar`, opts)            // URL del Avatar
 				]);
 
+				// Verificamos si el servidor existe/bot tiene acceso
 				if (guildRes.status === 404) {
 					setError("No se encontró el servidor o el bot no tiene acceso.");
 					return;
@@ -66,8 +100,17 @@ export default function ServerDashboardPage() {
 
 				if (!guildRes.ok) throw new Error("Error al cargar datos del servidor");
 
+				// Procesamos respuestas
 				setGuild(await guildRes.json());
 				if (userRes.ok) setUserData(await userRes.json());
+				if (listRes.ok) setServerList(await listRes.json());
+				if (premiumRes.ok) setUserPremium(await premiumRes.json());
+
+				// Procesamos el avatar específicamente (es un JSON { avatarURL: string })
+				if (avatarRes.ok) {
+					const avData: AvatarResponse = await avatarRes.json();
+					setAvatarUrl(avData.avatarURL);
+				}
 
 			} catch (err) {
 				console.error(err);
@@ -80,14 +123,14 @@ export default function ServerDashboardPage() {
 		if (guildId) fetchData();
 	}, [guildId]);
 
-	// Helper para Iconos de Discord (Soporta GIF si es animado)
-	const getIconUrl = (g: GuildDetails) =>
-		g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith('a_') ? 'gif' : 'webp'}?size=256` : null;
+	// Helpers
+	const getIconUrl = (g: GuildDetails | GuildSimple, size = 256) =>
+		g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith('a_') ? 'gif' : 'webp'}?size=${size}` : null;
 
 	const getBannerUrl = (g: GuildDetails) =>
 		g.banner ? `https://cdn.discordapp.com/banners/${g.id}/${g.banner}.webp?size=1024` : null;
 
-	// --- RENDERIZADO DE CARGA / ERROR ---
+	const isPremium = userPremium?.isActive || userPremium?.Permanent;
 
 	if (loading) {
 		return (
@@ -131,12 +174,12 @@ export default function ServerDashboardPage() {
 				<div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-cyan-900/10 rounded-full blur-[120px]"></div>
 			</div>
 
-			{/* --- SIDEBAR (Igual al dashboard principal) --- */}
+			{/* --- SIDEBAR --- */}
 			<aside className={`
         fixed inset-y-0 left-0 z-50 w-64 glass-panel border-r border-white/5 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-				<div className="h-20 flex items-center px-6 border-b border-white/5 gap-3">
+				<div className="h-20 flex items-center px-6 border-b border-white/5 gap-3 shrink-0">
 					<div className="relative w-8 h-8 float">
 						<div className="absolute inset-0 bg-cyan-500 rounded-full blur opacity-50"></div>
 						<img src="/logo.png" alt="Logo" className="relative w-full h-full object-contain drop-shadow-lg" />
@@ -144,20 +187,55 @@ export default function ServerDashboardPage() {
 					<span className="font-bold text-white text-xl tracking-wide gradient-text">PancyBot</span>
 				</div>
 
-				<nav className="flex-1 py-6 space-y-1 overflow-y-auto px-3">
-					{/* Info del Servidor Actual en el Sidebar */}
-					<div className="px-4 mb-6">
-						<div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
-							{getIconUrl(guild) ? (
-								<img src={getIconUrl(guild)!} className="w-10 h-10 rounded-full" />
+				<nav className="flex-1 py-6 space-y-1 overflow-y-auto px-3 relative">
+
+					{/* --- SELECTOR DE SERVIDOR (Dropdown) --- */}
+					<div className="px-4 mb-6 relative">
+						<button
+							onClick={() => setIsSelectorOpen(!isSelectorOpen)}
+							className={`w-full p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all text-left group ${isSelectorOpen ? 'ring-2 ring-cyan-500/50 bg-white/10' : ''}`}
+						>
+							{getIconUrl(guild, 64) ? (
+								<img src={getIconUrl(guild, 64)!} className="w-10 h-10 rounded-full bg-black/20 object-cover" />
 							) : (
-								<div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold">{guild.name.charAt(0)}</div>
+								<div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white">{guild.name.charAt(0)}</div>
 							)}
-							<div className="overflow-hidden">
-								<div className="text-xs text-cyan-400 font-bold uppercase">Gestionando</div>
+							<div className="overflow-hidden flex-1">
+								<div className="text-xs text-cyan-400 font-bold uppercase tracking-wider">Gestionando</div>
 								<div className="text-sm text-white font-bold truncate">{guild.name}</div>
 							</div>
-						</div>
+							<CaretDown size={16} className={`text-slate-500 group-hover:text-white transition-transform duration-300 ${isSelectorOpen ? 'rotate-180' : ''}`} />
+						</button>
+
+						{/* Menú Desplegable */}
+						{isSelectorOpen && (
+							<>
+								<div className="fixed inset-0 z-40" onClick={() => setIsSelectorOpen(false)}></div>
+
+								<div className="absolute top-full left-4 right-4 mt-2 bg-[#0f0f1a] border border-white/10 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 scrollbar-hide">
+									<div className="p-2 space-y-1">
+										{serverList.map((s) => (
+											<Link
+												key={s.id}
+												href={`/dashboard/${s.id}`}
+												onClick={() => setIsSelectorOpen(false)}
+												className={`flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition-colors group ${s.id === guildId ? 'bg-cyan-500/10' : ''}`}
+											>
+												{getIconUrl(s, 64) ? (
+													<img src={getIconUrl(s, 64)!} className="w-8 h-8 rounded-full object-cover" />
+												) : (
+													<div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">{s.name.charAt(0)}</div>
+												)}
+												<div className="flex-1 truncate text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+													{s.name}
+												</div>
+												{s.id === guildId && <Check size={16} className="text-cyan-400" />}
+											</Link>
+										))}
+									</div>
+								</div>
+							</>
+						)}
 					</div>
 
 					<div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">General</div>
@@ -177,7 +255,7 @@ export default function ServerDashboardPage() {
 					</Link>
 				</nav>
 
-				<div className="p-4 border-t border-white/5 bg-black/20">
+				<div className="p-4 border-t border-white/5 bg-black/20 mt-auto shrink-0">
 					<Link href="/dashboard" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors w-full px-4 py-3 rounded-lg hover:bg-white/5">
 						<ArrowLeft size={18} />
 						Volver a la lista
@@ -218,14 +296,23 @@ export default function ServerDashboardPage() {
 						<div className="flex items-center gap-3 pl-6 border-l border-white/10 h-8">
 							<div className="text-right hidden sm:block leading-tight">
 								<div className="text-sm font-bold text-white">{userData?.username || 'Usuario'}</div>
-								<div className="text-[10px] text-cyan-400 font-medium tracking-wide">CONECTADO</div>
+								{/* ESTADO PREMIUM DINÁMICO */}
+								{isPremium ? (
+									<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+										✨ PREMIUM
+									</div>
+								) : (
+									<div className="text-[10px] text-slate-500 font-bold tracking-wide">
+										GRATIS
+									</div>
+								)}
 							</div>
-							<div className="w-10 h-10 rounded-full p-[1px] bg-gradient-to-tr from-cyan-500 to-purple-600 overflow-hidden shadow-lg">
+							<div className={`w-10 h-10 rounded-full p-[1px] overflow-hidden shadow-lg ${isPremium ? 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 shadow-amber-500/20' : 'bg-gradient-to-tr from-cyan-500 to-purple-600 shadow-purple-500/20'}`}>
+								{/* USANDO LA URL DEL AVATAR OBTENIDA DEL FETCH */}
 								<img
-									src={`${API_BASE}/api/users/avatar`}
+									src={avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'}
 									className="w-full h-full rounded-full object-cover bg-black"
 									alt="Avatar"
-									onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png'; }}
 								/>
 							</div>
 						</div>
@@ -237,7 +324,6 @@ export default function ServerDashboardPage() {
 
 					{/* --- HERO SECTION DEL SERVIDOR --- */}
 					<div className="relative w-full h-64 md:h-80">
-						{/* Banner de Fondo */}
 						<div className="absolute inset-0 w-full h-full overflow-hidden">
 							{getBannerUrl(guild) ? (
 								<img src={getBannerUrl(guild)!} className="w-full h-full object-cover opacity-50 blur-sm" />
@@ -248,7 +334,6 @@ export default function ServerDashboardPage() {
 						</div>
 
 						<div className="absolute bottom-0 left-0 right-0 px-6 md:px-10 pb-6 flex items-end gap-6">
-							{/* Icono con efecto Glass */}
 							<div className="relative group">
 								<div className="absolute inset-0 bg-cyan-500 rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
 								<div className="w-28 h-28 md:w-36 md:h-36 rounded-3xl glass-panel p-1.5 relative z-10 overflow-hidden">
@@ -260,7 +345,6 @@ export default function ServerDashboardPage() {
 										</div>
 									)}
 								</div>
-								{/* Indicador de Nivel (Opcional) */}
 								<div className="absolute -top-2 -right-2 bg-amber-500 text-black text-xs font-black px-2 py-1 rounded-full shadow-lg z-20">
 									LVL {guild.premiumTier}
 								</div>
