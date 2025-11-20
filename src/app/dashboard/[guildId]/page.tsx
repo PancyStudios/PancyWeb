@@ -1,8 +1,8 @@
 "use client";
-
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+// CAMBIO: Usando 'phosphor-react' en lugar de '@phosphor-icons/react'
 import {
 	SquaresFour,
 	MusicNotes,
@@ -15,7 +15,8 @@ import {
 	Hash,
 	CaretRight,
 	CaretDown,
-	Check
+	Check,
+	SignOut // Nuevo icono para cerrar sesión
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -42,12 +43,10 @@ interface UserData {
 	id: string;
 }
 
-// Interfaz para la respuesta del avatar
 interface AvatarResponse {
 	avatarURL: string;
 }
 
-// Interfaz para el estado Premium
 interface UserPremium {
 	_id: string | null;
 	User: string;
@@ -73,6 +72,7 @@ export default function ServerDashboardPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+	const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // Nuevo estado para el menú de usuario
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -80,7 +80,7 @@ export default function ServerDashboardPage() {
 				const opts: RequestInit = {
 					headers: { 'Content-Type': 'application/json' },
 					credentials: 'include',
-					method: 'GET'
+					method: 'GET',
 				};
 
 				// 1. Peticiones en paralelo
@@ -131,6 +131,8 @@ export default function ServerDashboardPage() {
 		g.banner ? `https://cdn.discordapp.com/banners/${g.id}/${g.banner}.webp?size=1024` : null;
 
 	const isPremium = userPremium?.isActive || userPremium?.Permanent;
+
+	// --- RENDERIZADO DE CARGA / ERROR ---
 
 	if (loading) {
 		return (
@@ -293,28 +295,59 @@ export default function ServerDashboardPage() {
 							<span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#0a0a15]"></span>
 						</button>
 
-						<div className="flex items-center gap-3 pl-6 border-l border-white/10 h-8">
-							<div className="text-right hidden sm:block leading-tight">
-								<div className="text-sm font-bold text-white">{userData?.username || 'Usuario'}</div>
-								{/* ESTADO PREMIUM DINÁMICO */}
-								{isPremium ? (
-									<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
-										✨ PREMIUM
+						{/* --- ZONA DE USUARIO CON DROPDOWN --- */}
+						<div className="relative">
+							<button
+								onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+								className="flex items-center gap-3 pl-6 border-l border-white/10 h-8 cursor-pointer hover:opacity-80 transition-opacity group"
+							>
+								<div className="text-right hidden sm:block leading-tight">
+									<div className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+										{userData?.username || 'Usuario'}
 									</div>
-								) : (
-									<div className="text-[10px] text-slate-500 font-bold tracking-wide">
-										GRATIS
+									{/* ESTADO PREMIUM DINÁMICO */}
+									{isPremium ? (
+										<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+											✨ PREMIUM
+										</div>
+									) : (
+										<div className="text-[10px] text-slate-500 font-bold tracking-wide">
+											GRATIS
+										</div>
+									)}
+								</div>
+								<div className={`w-10 h-10 rounded-full p-[1px] overflow-hidden shadow-lg ${isPremium ? 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 shadow-amber-500/20' : 'bg-gradient-to-tr from-cyan-500 to-purple-600 shadow-purple-500/20'}`}>
+									<img
+										src={avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'}
+										className="w-full h-full rounded-full object-cover bg-black"
+										alt="Avatar"
+									/>
+								</div>
+								<CaretDown size={14} className={`text-slate-500 group-hover:text-white transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+							</button>
+
+							{/* --- MENÚ DESPLEGABLE DE USUARIO --- */}
+							{isUserMenuOpen && (
+								<>
+									<div className="fixed inset-0 z-40" onClick={() => setIsUserMenuOpen(false)}></div>
+									<div className="absolute top-full right-0 mt-4 w-48 bg-[#0f0f1a] border border-white/10 rounded-xl shadow-2xl z-50 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+										<div className="p-2">
+											<div className="px-3 py-2 border-b border-white/5 mb-1">
+												<div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Mi Cuenta</div>
+											</div>
+
+											{/* Botón de Cerrar Sesión */}
+											<a
+												href={`${API_BASE}/api/auth/logout?redirect=${encodeURIComponent(window.location.origin)}`}
+												className="flex items-center gap-3 p-2 rounded-lg hover:bg-red-500/10 text-slate-300 hover:text-red-400 transition-colors w-full group"
+											>
+												<SignOut size={18} className="group-hover:translate-x-1 transition-transform" />
+												<span className="font-medium text-sm">Cerrar Sesión</span>
+											</a>
+										</div>
 									</div>
-								)}
-							</div>
-							<div className={`w-10 h-10 rounded-full p-[1px] overflow-hidden shadow-lg ${isPremium ? 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 shadow-amber-500/20' : 'bg-gradient-to-tr from-cyan-500 to-purple-600 shadow-purple-500/20'}`}>
-								{/* USANDO LA URL DEL AVATAR OBTENIDA DEL FETCH */}
-								<img
-									src={avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-									className="w-full h-full rounded-full object-cover bg-black"
-									alt="Avatar"
-								/>
-							</div>
+								</>
+							)}
 						</div>
 					</div>
 				</header>
