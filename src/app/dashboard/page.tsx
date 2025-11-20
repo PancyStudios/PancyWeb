@@ -1,5 +1,4 @@
-"use client";
-
+'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -45,46 +44,38 @@ export default function DashboardPage() {
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false); // Para móvil
 
-	// Carga de Datos
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				// 'credentials: include' es vital para que viaje la cookie de sesión de Passport
 				const opts: RequestInit = {
-					headers: { 'Content-Type': 'application/json' },
-					credentials: 'include',
-
+					headers: {'Content-Type': 'application/json'},
+					credentials: 'include'
 				};
-				// Hacemos todas las peticiones en paralelo para mayor velocidad
-				try {
-					let err: boolean
-					const responses = await Promise.all([
-						fetch(`${API_BASE}/api/guilds`, opts).catch((err) => { return }),
-						fetch(`${API_BASE}/api/guilds/notfound`, opts).catch((err) => { return }),
-						fetch(`${API_BASE}/api/users`, opts).catch((err) => { return }), // Asumiendo que tienes este endpoint para data básica del user
-						fetch(`${API_BASE}/api/users/premium`, opts).catch((err) => { return }) // <--- NUEVA PETICIÓN
-					])
 
+				const [userRes, premiumRes] = await Promise.all([
+					fetch(`${API_BASE}/api/users`, opts),
+					fetch(`${API_BASE}/api/users/premium`, opts)
+				]);
 
-					const [managedRes, invitableRes, userRes, premiumRes] = responses
-					if(!managedRes || !invitableRes || !userRes || !premiumRes)  {
-						const currentUrl = window.location.href;
-
-						window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
-						return;
-					}
-
-					if (premiumRes.ok) setUserPremium(await premiumRes.json());
-					if (managedRes.ok) setManagedGuilds(await managedRes.json());
-					if (invitableRes.ok) setInvitableGuilds(await invitableRes.json());
-					if (userRes.ok) setUserData(await userRes.json());
-				} catch {
-					return redirect(`${API_BASE}/api/auth/discord`);
+				if (userRes.status === 401 || premiumRes.status === 401) {
+					const currentUrl = window.location.href;
+					window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
+					return;
 				}
-			} catch (error) {
-				console.error("Error cargando datos del dashboard:", error);
-			} finally {
-				setLoading(false);
+
+				if (userRes.ok) setUserData(await userRes.json());
+				if (premiumRes.ok) setUserPremium(await premiumRes.json());
+
+				const managedRes = await fetch(`${API_BASE}/api/guilds`, opts);
+
+				if (managedRes.status === 401) return; // Doble check por seguridad
+				if (managedRes.ok) setManagedGuilds(await managedRes.json());
+
+				const invitableRes = await fetch(`${API_BASE}/api/guilds/notfound`, opts);
+
+				if (invitableRes.ok) setInvitableGuilds(await invitableRes.json());
+			} catch (err) {
+				console.error(err);
 			}
 		};
 
