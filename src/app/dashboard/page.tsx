@@ -3,14 +3,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
 	SquaresFour,
-	MusicNotes,
 	ArrowLeft,
 	List,
-	CaretDown,
 	Bell,
-	ShieldCheck,
-	Coins
-} from '@phosphor-icons/react';
+} from 'phosphor-react';
 import {redirect} from "next/navigation";
 
 // --- TIPOS ---
