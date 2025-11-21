@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Dynamic Update">
+      <change afterPath="$PROJECT_DIR$/src/app/dashboard/layout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/context/SocketContext.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/dashboard/[guildId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/[guildId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +93,7 @@
       <workItem from="1763525716431" duration="529000" />
       <workItem from="1763526868046" duration="340000" />
       <workItem from="1763531644345" duration="5852000" />
-      <workItem from="1763556053403" duration="38328000" />
+      <workItem from="1763556053403" duration="55736000" />
     </task>
     <task id="LOCAL-00001" summary="ToS, Privacity and Other changes">
       <option name="closed" value="true" />
@@ -236,7 +239,23 @@
       <option name="project" value="LOCAL" />
       <updated>1763615698547</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Dynamic Update">
+      <option name="closed" value="true" />
+      <created>1763661049202</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1763661049202</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Dynamic Update">
+      <option name="closed" value="true" />
+      <created>1763661905902</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1763661905902</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
