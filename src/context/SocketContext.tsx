@@ -4,10 +4,34 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { io, Socket } from 'socket.io-client';
 const API_URL = "https://api.pancy.miau.media";
 
+interface MusicTrack {
+	title: string;
+	artist: string;
+	duration: number;
+	thumbnail: string;
+	url: string;
+}
+
+interface MusicState {
+	isPlaying: boolean;
+	isPaused: boolean;
+	currentTrack: MusicTrack | null;
+	progress: number; // Current position in seconds
+	volume: number;
+	queue: Array<{
+		title: string;
+		artist: string;
+		duration: number;
+	}>;
+	guildId: string;
+	lastUpdate: number;
+}
+
 interface SocketContextType {
 	socket: Socket | null;
 	isConnected: boolean;
 	lastLog: any; // Aquí guardaremos el último log recibido globalmente
+	musicState: MusicState | null;
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
@@ -28,6 +52,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 	const [socket, setSocket] = useState<Socket | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 	const [lastLog, setLastLog] = useState<any>(null);
+	const [musicState, setMusicState] = useState<MusicState | null>(null);
 
 	useEffect(() => {
 		// Creamos la conexión
@@ -79,6 +104,11 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			setLastLog(logData);
 		});
 
+		socketInstance.on('music:update', (data) => {
+			console.log('🎵 [Socket] Music Update:', data.eventType, data.data);
+			setMusicState(data.data);
+		});
+
 		setSocket(socketInstance);
 
 		// Limpieza al desmontar
@@ -88,7 +118,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 	}, []);
 
 	return (
-		<SocketContext.Provider value={{ socket, isConnected, lastLog }}>
+		<SocketContext.Provider value={{ socket, isConnected, lastLog, musicState }}>
 			{children}
 		</SocketContext.Provider>
 	);
