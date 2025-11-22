@@ -4,12 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Dynamic Update">
-      <change afterPath="$PROJECT_DIR$/src/app/dashboard/layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/SocketContext.tsx" afterDir="false" />
+    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="WebSocket Add">
+      <change afterPath="$PROJECT_DIR$/src/components/BuildInfoInjector.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/types/window.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +20,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -54,6 +55,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "npm.lint.executor": "Run",
     "run.code.analysis.last.selected.profile": "pProject Default",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
     "to.speed.mode.migration.done": "true",
@@ -61,7 +63,7 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="npm.Next.js: server-side">
+  <component name="RunManager" selected="npm.lint">
     <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
       <method v="2" />
     </configuration>
@@ -75,6 +77,22 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="lint" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="lint" />
+      </scripts>
+      <node-interpreter value="project" />
+      <package-manager value="yarn" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.lint" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -93,7 +111,7 @@
       <workItem from="1763525716431" duration="529000" />
       <workItem from="1763526868046" duration="340000" />
       <workItem from="1763531644345" duration="5852000" />
-      <workItem from="1763556053403" duration="55736000" />
+      <workItem from="1763556053403" duration="61337000" />
     </task>
     <task id="LOCAL-00001" summary="ToS, Privacity and Other changes">
       <option name="closed" value="true" />
@@ -255,7 +273,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763661905902</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="WebSocket Add">
+      <option name="closed" value="true" />
+      <created>1763745789027</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1763745789027</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,6 +312,7 @@
     <MESSAGE value="Test New Dashboard" />
     <MESSAGE value="Dynamic URL API" />
     <MESSAGE value="Dynamic Update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Dynamic Update" />
+    <MESSAGE value="WebSocket Add" />
+    <option name="LAST_COMMIT_MESSAGE" value="WebSocket Add" />
   </component>
 </project>
