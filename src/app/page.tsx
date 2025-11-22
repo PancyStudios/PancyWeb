@@ -14,6 +14,8 @@ export default function Home() {
 								src="/logo.png"
 								alt="PancyBot Logo"
 								fill
+								sizes="40px"
+								priority
 								className="object-contain drop-shadow-[0_0_10px_rgba(192,132,252,0.5)]"
 							/>
 						</div>
@@ -29,7 +31,7 @@ export default function Home() {
 						{/* Aquí integramos el botón inteligente */}
 						<UserButton />
 						<a href="https://discord.com/oauth2/authorize?client_id=801873281975975968"
-						   className="hidden sm:flex btn-cosmic text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-purple-500/30 transition-transform hover:scale-105">
+							className="hidden sm:flex btn-cosmic text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-purple-500/30 transition-transform hover:scale-105">
 							Invitar
 						</a>
 					</div>
@@ -52,7 +54,7 @@ export default function Home() {
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
 							<a href="https://discord.com/oauth2/authorize?client_id=801873281975975968"
-							   className="btn-cosmic text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-transform hover:-translate-y-1 text-center">
+								className="btn-cosmic text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-transform hover:-translate-y-1 text-center">
 								🚀 Despegar ahora
 							</a>
 							{/* Aquí usamos Link para ir al dashboard, que será manejado por middleware/page.tsx */}
@@ -71,14 +73,15 @@ export default function Home() {
 									src="/logo.png"
 									alt="Planet Logo"
 									fill
-									className="object-contain drop-shadow-2xl"
+									sizes="(max-width: 768px) 300px, 500px"
 									priority
+									className="object-contain drop-shadow-2xl"
 								/>
 							</div>
-							<div className="absolute top-0 right-10 w-16 h-16 glass-panel rounded-2xl flex items-center justify-center animate-bounce" style={{animationDuration: "3s"}}>
+							<div className="absolute top-0 right-10 w-16 h-16 glass-panel rounded-2xl flex items-center justify-center animate-bounce" style={{ animationDuration: "3s" }}>
 								<span className="text-2xl">🎵</span>
 							</div>
-							<div className="absolute bottom-10 left-0 w-20 h-20 glass-panel rounded-full flex items-center justify-center animate-bounce" style={{animationDuration: "4s", animationDelay: "1s"}}>
+							<div className="absolute bottom-10 left-0 w-20 h-20 glass-panel rounded-full flex items-center justify-center animate-bounce" style={{ animationDuration: "4s", animationDelay: "1s" }}>
 								<span className="text-3xl">💎</span>
 							</div>
 						</div>
@@ -112,7 +115,7 @@ export default function Home() {
 							<div className="md:w-1/2 w-full bg-black/40 rounded-xl p-6 border border-white/10">
 								<div className="flex items-end justify-between h-24 gap-1">
 									{[40, 70, 50, 85, 60, 90, 45].map((h, i) => (
-										<div key={i} className={`w-full rounded-t-sm animate-pulse ${i % 2 === 0 ? 'bg-cyan-500/50' : i % 3 === 0 ? 'bg-purple-500/50' : 'bg-fuchsia-500/50'}`} style={{height: `${h}%`}}></div>
+										<div key={i} className={`w-full rounded-t-sm animate-pulse ${i % 2 === 0 ? 'bg-cyan-500/50' : i % 3 === 0 ? 'bg-purple-500/50' : 'bg-fuchsia-500/50'}`} style={{ height: `${h}%` }}></div>
 									))}
 								</div>
 								<div className="mt-4 flex items-center gap-4">

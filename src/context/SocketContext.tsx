@@ -36,6 +36,9 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			withCredentials: true,
 			autoConnect: true,
 			reconnection: true,
+			reconnectionDelay: 1000,
+			reconnectionDelayMax: 5000,
+			reconnectionAttempts: 5,
 			transports: ['websocket', 'polling'],
 		});
 
@@ -44,7 +47,10 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			console.log('🟢 [Socket] Conectado:', socketInstance.id);
 			setIsConnected(true);
 
-			socketInstance.emit('ready');
+			// Pequeño delay para asegurar que la conexión está estable antes de emitir eventos
+			setTimeout(() => {
+				socketInstance.emit('ready');
+			}, 100);
 		});
 
 		socketInstance.on('disconnect', (reason) => {
@@ -57,7 +63,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 		});
 
 		socketInstance.on('connect_error', (err) => {
-			console.error('⛔ [Socket] Error de Autenticación:', err);
+			console.error('⛔ [Socket] Error de Conexión:');
+			console.error(err);
+		});
+
+		socketInstance.on('error', (err) => {
+			console.error('❌ [Socket] Error:', err);
 		});
 
 		socketInstance.on('server:health', (data) => {
