@@ -104,11 +104,47 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			setLastLog(logData);
 		});
 
-		socketInstance.on('music:update', (data) => {
-			console.log('🎵 [Socket] Music Update:', data.eventType, data.data);
-			setMusicState(data.data);
+		socketInstance.on('music:update', (payload) => {
+			console.log('🎵 [Socket] Music Update:', payload.eventType, payload.data);
+			setMusicState(prev => mergeMusicState(prev, payload.data));
 		});
 
+		// Helper to merge incoming partial music state with existing state
+		function mergeMusicState(prev: MusicState | null, incoming: Partial<MusicState>): MusicState {
+			const base: MusicState = prev ?? {
+				isPlaying: false,
+				isPaused: false,
+				currentTrack: null,
+				progress: 0,
+				volume: 100,
+				queue: [],
+				guildId: '',
+				lastUpdate: Date.now(),
+			};
+			const result: MusicState = { ...base };
+			(Object.entries(incoming) as [keyof MusicState, any][]).forEach(([key, value]) => {
+				if (value !== undefined) {
+					if (key === 'currentTrack' && typeof value === 'object' && value !== null) {
+						// Deep merge track fields, preserving existing ones when not provided
+						const prevTrack = result.currentTrack ?? {};
+						const mergedTrack: any = { ...prevTrack };
+						Object.entries(value).forEach(([k, v]) => {
+							if (v !== undefined) {
+								mergedTrack[k] = v;
+							}
+						});
+						result.currentTrack = mergedTrack as any;
+					} else if (key === 'currentTrack' && value === null) {
+						// Preserve existing track when server sends null
+						// do nothing
+					} else {
+						(result as any)[key] = value;
+					}
+				}
+			});
+			result.lastUpdate = Date.now();
+			return result;
+		}
 		setSocket(socketInstance);
 
 		// Limpieza al desmontar

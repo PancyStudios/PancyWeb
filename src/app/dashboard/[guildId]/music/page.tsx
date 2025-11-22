@@ -34,6 +34,9 @@ export default function MusicPage() {
     // Local progress for smooth animation
     const [localProgress, setLocalProgress] = useState(0);
 
+    // Store last known track info to preserve display when currentTrack becomes null
+    const [lastTrackInfo, setLastTrackInfo] = useState<{ title: string; artist: string; thumbnail: string; duration: number } | null>(null);
+
     // Load settings
     useEffect(() => {
         if (!guildId) return;
@@ -66,13 +69,15 @@ export default function MusicPage() {
 
     // Update local progress every second when playing
     useEffect(() => {
-        if (musicState?.isPlaying && !musicState?.isPaused && musicState?.currentTrack) {
+        if (musicState?.isPlaying && musicState?.currentTrack) {
             const interval = setInterval(() => {
-                setLocalProgress(prev => {
-                    const newProgress = prev + 1;
-                    // Don't exceed track duration
-                    return newProgress <= musicState.currentTrack!.duration ? newProgress : prev;
-                });
+                if (!musicState?.isPaused) {
+                    setLocalProgress(prev => {
+                        const newProgress = prev + 1;
+                        // Don't exceed track duration
+                        return newProgress <= musicState.currentTrack!.duration ? newProgress : prev;
+                    });
+                }
             }, 1000);
             return () => clearInterval(interval);
         }
