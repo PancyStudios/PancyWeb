@@ -18,6 +18,7 @@ const nextConfig = {
 	generateBuildId: async () => {
 		return buildId;
 	},
+	allowedDevOrigins: ['*.miau.media', "pancy.dev.miau.media"],
 
 	env: {
 		NEXT_PUBLIC_APP_VERSION: version,

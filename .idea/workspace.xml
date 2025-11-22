@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="WebSocket Add">
-      <change afterPath="$PROJECT_DIR$/src/components/BuildInfoInjector.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/window.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="25dd94c2-7623-4432-a14e-70a156238e79" name="Changes" comment="Debug Info Add" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -111,7 +104,7 @@
       <workItem from="1763525716431" duration="529000" />
       <workItem from="1763526868046" duration="340000" />
       <workItem from="1763531644345" duration="5852000" />
-      <workItem from="1763556053403" duration="61337000" />
+      <workItem from="1763556053403" duration="62268000" />
     </task>
     <task id="LOCAL-00001" summary="ToS, Privacity and Other changes">
       <option name="closed" value="true" />
@@ -281,7 +274,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763745789027</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Debug Info Add">
+      <option name="closed" value="true" />
+      <created>1763769740865</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1763769740865</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -313,6 +314,7 @@
     <MESSAGE value="Dynamic URL API" />
     <MESSAGE value="Dynamic Update" />
     <MESSAGE value="WebSocket Add" />
-    <option name="LAST_COMMIT_MESSAGE" value="WebSocket Add" />
+    <MESSAGE value="Debug Info Add" />
+    <option name="LAST_COMMIT_MESSAGE" value="Debug Info Add" />
   </component>
 </project>
