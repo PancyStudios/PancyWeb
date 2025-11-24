@@ -13,19 +13,20 @@ const buildId = process.env.NODE_ENV === 'development'
 	? 'development'
 	: commitHash;
 
-const nextConfig = {
+const nextConfig : NextConfig = {
 	reactStrictMode: true,
 	generateBuildId: async () => {
 		return buildId;
 	},
 	allowedDevOrigins: ['*.miau.media', "pancy.dev.miau.media"],
-
 	env: {
 		NEXT_PUBLIC_APP_VERSION: version,
 		NEXT_PUBLIC_COMMIT_HASH: commitHash,
 		NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
 		NEXT_PUBLIC_BUILD_ID: buildId,
 	},
+	experimental: {
+	}
 }
 
 export default nextConfig;

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { MusicNotes, Faders, SpeakerHigh, Disc, SkipForward, Pause, Play, Queue, FloppyDisk } from 'phosphor-react';
 import { useSocket } from '@/context/SocketContext';
+import toast, { Toaster } from 'react-hot-toast';
 
 const API_BASE = "https://api.pancy.miau.media";
 
@@ -34,8 +35,77 @@ export default function MusicPage() {
     // Local progress for smooth animation
     const [localProgress, setLocalProgress] = useState(0);
 
-    // Store last known track info to preserve display when currentTrack becomes null
-    const [lastTrackInfo, setLastTrackInfo] = useState<{ title: string; artist: string; thumbnail: string; duration: number } | null>(null);
+    // Action loading state (e.g. 'play', 'pause', 'skip', 'skip:3')
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+    // Helper to POST an action to the API and handle loading state
+    const postAction = async (endpoint: string, body?: Record<string, unknown>) => {
+        if (!guildId) {
+            toast.error('ID de servidor no disponible');
+            return null;
+        }
+        setActionLoading(endpoint);
+        try {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            const data = await res.json().catch(() => ({ ok: false, message: 'Error al parsear respuesta' }));
+
+            if (!res.ok || !data.ok) {
+                toast.error(data.message || data.error || 'Error al ejecutar la acción');
+                return null;
+            }
+
+            toast.success(data.message || 'Acción ejecutada correctamente');
+            return data;
+        } catch (err) {
+            console.error('Action error', err);
+            toast.error('Error de conexión con el servidor');
+            return null;
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handlePlay = async () => {
+        // Optimistic UI: actualizamos el estado local inmediatamente
+        if (musicState) {
+            musicState.isPaused = false;
+        }
+        const result = await postAction(`/api/guilds/${guildId}/music/play`);
+        // Si falla, el socket actualizará el estado real
+        if (!result && musicState) {
+            // Revertir en caso de error
+            musicState.isPaused = true;
+        }
+    };
+
+    const handlePause = async () => {
+        // Optimistic UI
+        if (musicState) {
+            musicState.isPaused = true;
+        }
+        const result = await postAction(`/api/guilds/${guildId}/music/pause`);
+        if (!result && musicState) {
+            musicState.isPaused = false;
+        }
+    };
+
+    const handleSkipNext = async () => {
+        await postAction(`/api/guilds/${guildId}/music/skip`, { direction: 'next' });
+        // El socket actualizará automáticamente con la nueva canción
+    };
+
+    const handleSkipPrevious = async () => {
+        await postAction(`/api/guilds/${guildId}/music/skip`, { direction: 'previous' });
+    };
+
+    const handleSkipToIndex = async (index: number) => {
+        await postAction(`/api/guilds/${guildId}/music/skip/${index}`);
+    };
 
     // Load settings
     useEffect(() => {
@@ -87,14 +157,21 @@ export default function MusicPage() {
         if (!settings) return;
         setSaving(true);
         try {
-            await fetch(`${API_BASE}/api/guilds/${guildId}/music`, {
+            const res = await fetch(`${API_BASE}/api/guilds/${guildId}/music`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(settings)
             });
+
+            if (res.ok) {
+                toast.success('Configuración guardada correctamente');
+            } else {
+                toast.error('Error al guardar la configuración');
+            }
         } catch (err) {
             console.error("Error saving settings:", err);
+            toast.error('Error de conexión al guardar');
         } finally {
             setSaving(false);
         }
@@ -110,6 +187,22 @@ export default function MusicPage() {
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
+            <Toaster
+                position="bottom-right"
+                toastOptions={{
+                    style: {
+                        background: '#1e293b',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                    },
+                    success: {
+                        iconTheme: {
+                            primary: '#ec4899',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
+            />
 
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
@@ -179,20 +272,27 @@ export default function MusicPage() {
                                 {/* Buttons */}
                                 <div className="flex items-center justify-center md:justify-start gap-6 mt-4">
                                     <button
+                                        onClick={handleSkipPrevious}
                                         className="p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        disabled={!currentTrack}
+                                        disabled={!currentTrack || !!actionLoading}
                                     >
                                         <SkipForward size={24} weight="fill" className="rotate-180" />
                                     </button>
                                     <button
+                                        onClick={isPlaying ? handlePause : handlePlay}
                                         className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                                        disabled={!currentTrack}
+                                        disabled={!currentTrack || !!actionLoading}
                                     >
-                                        {isPlaying ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" className="ml-1" />}
+                                        {actionLoading === `/api/guilds/${guildId}/music/play` || actionLoading === 'play' || actionLoading === 'pause' ? (
+                                            <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                        ) : (
+                                            isPlaying ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" className="ml-1" />
+                                        )}
                                     </button>
                                     <button
+                                        onClick={handleSkipNext}
                                         className="p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        disabled={!currentTrack}
+                                        disabled={!currentTrack || !!actionLoading}
                                     >
                                         <SkipForward size={24} weight="fill" />
                                     </button>
@@ -210,7 +310,11 @@ export default function MusicPage() {
                             </div>
                             <div className="space-y-2 max-h-64 overflow-y-auto">
                                 {musicState.queue.map((track, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                                    <div
+                                        key={idx}
+                                        onClick={() => handleSkipToIndex(idx)}
+                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
+                                    >
                                         <span className="text-slate-500 text-sm font-bold w-6">{idx + 1}</span>
                                         <div className="flex-1 min-w-0">
                                             <div className="text-sm font-bold text-white truncate">{track.title}</div>
