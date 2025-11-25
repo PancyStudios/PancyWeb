@@ -96,9 +96,15 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			console.error('❌ [Socket] Error:', err);
 		});
 
-		socketInstance.on('server:health', (data) => {
-			console.debug('❤ [Socket] Heartbeat:', data);
-		});
+		const intervalSendHeartbeat = setInterval(() => {
+			if (socketInstance && socketInstance.connected) {
+				socketInstance.emit('heartbeat');
+				const now = Date.now();
+				socketInstance.on('heartbeat:ack', (data) => {
+					console.debug('💓 [Socket] Heartbeat ', Date.now() - now, 'ms', 'Uptime del servidor:', data.uptime / 1000, 'segundos')
+				})
+			}
+		}, 30000)
 
 		socketInstance.on('log:new', (logData) => {
 			setLastLog(logData);
@@ -150,6 +156,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 		// Limpieza al desmontar
 		return () => {
 			socketInstance.disconnect();
+			clearInterval(intervalSendHeartbeat);
 		};
 	}, []);
 
