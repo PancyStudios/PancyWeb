@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { MusicNotes, Faders, SpeakerHigh, Disc, SkipForward, Pause, Play, Queue, FloppyDisk } from 'phosphor-react';
 import { useSocket } from '@/context/SocketContext';
 import toast, { Toaster } from 'react-hot-toast';
@@ -205,14 +206,19 @@ export default function MusicPage() {
             />
 
             {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 shadow-lg shadow-pink-500/10">
-                    <MusicNotes size={32} weight="fill" />
+            <div className="flex items-center justify-between gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 shadow-lg shadow-pink-500/10">
+                        <MusicNotes size={32} weight="fill" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">Sistema de Música</h1>
+                        <p className="text-slate-400">Gestiona la reproducción y configuración de audio.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Sistema de Música</h1>
-                    <p className="text-slate-400">Gestiona la reproducción y configuración de audio.</p>
-                </div>
+                <Link href={`/dashboard/${guildId}`} className="hidden md:flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition-all">
+                    <span className="font-bold">Volver al Panel</span>
+                </Link>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

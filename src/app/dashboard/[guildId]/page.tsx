@@ -117,6 +117,12 @@ export default function ServerDashboardPage() {
 				]);
 
 				// Manejo de errores específicos
+				if (userRes.status === 401 || premiumRes.status === 401 || listRes.status === 401) {
+					const currentUrl = window.location.href;
+					window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
+					return;
+				}
+
 				if (guildRes.status === 404) {
 					setError("No se encontró el servidor o el bot no tiene acceso.");
 					setLoading(false);
@@ -163,7 +169,10 @@ export default function ServerDashboardPage() {
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			const apiInt = Date.now()
-			const apiRes = await fetch(`${API_BASE}`)
+			await fetch(`${API_BASE}`, {
+				method: 'GET',
+				cache: 'no-cache',
+			})
 			const apiLat = Date.now() - apiInt
 			setPing(apiLat)
 		}, 30000);
@@ -386,7 +395,7 @@ export default function ServerDashboardPage() {
 
 					<Link href={`/dashboard/${guildId}/music`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
 						<MusicNotes size={20} className="text-pink-400 group-hover:scale-110 transition-transform" weight="duotone" />
-						<span className="font-medium">Música Hi-Fi</span>
+						<span className="font-medium">Música</span>
 					</Link>
 
 					<Link href={`/dashboard/${guildId}/moderation`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">

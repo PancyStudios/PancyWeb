@@ -63,7 +63,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 			reconnection: true,
 			reconnectionDelay: 1000,
 			reconnectionDelayMax: 5000,
-			reconnectionAttempts: 5,
+			reconnectionAttempts: Infinity,
 			transports: ['websocket', 'polling'],
 		});
 
@@ -97,13 +97,11 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 		});
 
 		const intervalSendHeartbeat = setInterval(() => {
-			if (socketInstance && socketInstance.connected) {
-				socketInstance.emit('heartbeat');
-				const now = Date.now();
-				socketInstance.on('heartbeat:ack', (data) => {
-					console.debug('💓 [Socket] Heartbeat ', Date.now() - now, 'ms', 'Uptime del servidor:', data.uptime / 1000, 'segundos')
-				})
-			}
+			socketInstance.emit('heartbeat');
+			const now = Date.now();
+			socketInstance.once('heartbeat:ack', (data) => {
+				console.debug('💓 [Socket] Heartbeat ', Date.now() - now, 'ms', 'Uptime del servidor:', data.uptime, 'segundos')
+			})
 		}, 30000)
 
 		socketInstance.on('log:new', (logData) => {

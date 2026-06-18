@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Scroll, Clock, Tag, ArrowsClockwise } from 'phosphor-react';
 import { useSocket } from '@/context/SocketContext';
 
@@ -86,13 +87,18 @@ export default function LogsPage() {
                         <p className="text-slate-400">Historial de eventos en tiempo real.</p>
                     </div>
                 </div>
-                <button
-                    onClick={fetchLogs}
-                    className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                    title="Recargar historial"
-                >
-                    <ArrowsClockwise size={20} />
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={fetchLogs}
+                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                        title="Recargar historial"
+                    >
+                        <ArrowsClockwise size={20} />
+                    </button>
+                    <Link href={`/dashboard/${guildId}`} className="hidden md:flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition-all">
+                        <span className="font-bold">Volver al Panel</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Logs List */}

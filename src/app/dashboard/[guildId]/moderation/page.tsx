@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { ShieldCheck, Warning, UserMinus, HandPalm, Fire, CheckCircle, XCircle } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
@@ -62,14 +63,19 @@ export default function ModerationPage() {
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
 
             {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center text-green-400 shadow-lg shadow-green-500/10">
-                    <ShieldCheck size={32} weight="fill" />
+            <div className="flex items-center justify-between gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center text-green-400 shadow-lg shadow-green-500/10">
+                        <ShieldCheck size={32} weight="fill" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">Moderación y Seguridad</h1>
+                        <p className="text-slate-400">Gestiona sanciones y el sistema de protección automática.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Moderación y Seguridad</h1>
-                    <p className="text-slate-400">Gestiona sanciones y el sistema de protección automática.</p>
-                </div>
+                <Link href={`/dashboard/${guildId}`} className="hidden md:flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition-all">
+                    <span className="font-bold">Volver al Panel</span>
+                </Link>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
