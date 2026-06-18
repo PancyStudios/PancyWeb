@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	List,
 	Bell,
+	CurrencyCircleDollar
 } from 'phosphor-react';
 import {redirect} from "next/navigation";
 
@@ -121,6 +122,12 @@ export default function DashboardPage() {
 						<SquaresFour size={20} weight="fill" />
 						<span className="font-medium">Vista General</span>
 					</Link>
+
+					<div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Comunidad</div>
+					<Link href="/dashboard/economy" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all">
+						<CurrencyCircleDollar size={20} weight="fill" />
+						<span className="font-medium">Economía Global</span>
+					</Link>
 				</nav>
 
 				<div className="p-4 border-t border-white/5 bg-black/20">
@@ -174,7 +181,11 @@ export default function DashboardPage() {
 									{userData?.username || 'Usuario'}
 								</div>
 								<div>{/* --- BADGE PREMIUM DINÁMICO --- */}
-									{isPremium ? (
+									{userData?.isDeveloper ? (
+										<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(192,38,211,0.5)]">
+											👨‍💻 DEVELOPER
+										</div>
+									) : isPremium ? (
 										<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
 											✨ PREMIUM
 										</div>

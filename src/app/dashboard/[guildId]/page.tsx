@@ -44,6 +44,7 @@ interface GuildDetails {
 	premiumTier: number;
 	banner: string | null;
 	channels?: Channel[];
+	botLevel?: { level: number, xp: number };
 }
 
 interface GuildSimple {
@@ -469,7 +470,11 @@ export default function ServerDashboardPage() {
 							>
 								<div className="text-right hidden sm:block leading-tight">
 									<div className="text-sm font-bold text-white">{userData?.username || 'Usuario'}</div>
-									{isPremium ? (
+									{(userData as any)?.isDeveloper ? (
+										<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(192,38,211,0.5)]">
+											👨‍💻 DEVELOPER
+										</div>
+									) : isPremium ? (
 										<div className="text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 font-black tracking-wide drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
 											✨ PREMIUM
 										</div>
@@ -543,9 +548,17 @@ export default function ServerDashboardPage() {
 										)}
 									</div>
 									{guild && (
-										<div className="absolute -top-3 -right-3 bg-gradient-to-br from-amber-400 to-orange-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-orange-500/30 z-20 border border-white/20">
-											LVL {guild.premiumTier}
-										</div>
+										<>
+											<div className="absolute -top-3 -right-3 bg-gradient-to-br from-amber-400 to-orange-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-orange-500/30 z-20 border border-white/20">
+												LVL {guild.botLevel?.level || 1}
+											</div>
+											{guild.premiumTier > 0 && (
+												<div className="absolute -bottom-3 -right-3 bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-purple-500/30 z-20 border border-white/20 flex items-center gap-1">
+													<div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+													BOOST {guild.premiumTier}
+												</div>
+											)}
+										</>
 									)}
 								</div>
 
