@@ -22,6 +22,9 @@ export default function DashboardLayout({
 				}
 			} catch (err) {
 				console.error("Auth check failed:", err);
+				// Si falla la petición por CORS o red, asumimos que requiere login
+				const currentUrl = window.location.href;
+				window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
 			}
 		};
 		checkAuth();

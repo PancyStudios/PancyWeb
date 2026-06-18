@@ -75,6 +75,8 @@ export default function DashboardPage() {
 				setLoading(false);
 			} catch (err) {
 				console.error(err);
+				const currentUrl = window.location.href;
+				window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
 			}
 		};
 		fetchData();

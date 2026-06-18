@@ -23,7 +23,8 @@ import {
 	Wrench,
 	Planet,
 	Copy,
-	Gauge
+	Gauge,
+	HandWaving
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -158,6 +159,8 @@ export default function ServerDashboardPage() {
 			} catch (err) {
 				console.error("Dashboard Error:", err);
 				setError("Ocurrió un error al conectar con los servicios de Pancy.");
+				const currentUrl = window.location.href;
+				window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
 			} finally {
 				setLoading(false);
 			}
@@ -406,6 +409,11 @@ export default function ServerDashboardPage() {
 					<Link href={`/dashboard/${guildId}/logs`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
 						<Scroll size={20} className="text-amber-400 group-hover:scale-110 transition-transform" weight="duotone" />
 						<span className="font-medium">Logs & Auditoría</span>
+					</Link>
+
+					<Link href={`/dashboard/${guildId}/greetings`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<HandWaving size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" weight="duotone" />
+						<span className="font-medium">Saludos</span>
 					</Link>
 
 					<Link href={`/dashboard/${guildId}/config`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
@@ -682,6 +690,29 @@ export default function ServerDashboardPage() {
 									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
 										<Wrench size={20} weight="bold" />
 										Ajustes
+									</div>
+								</div>
+							</Link>
+
+							{/* 5. GREETINGS */}
+							<Link href={`/dashboard/${guildId}/greetings`} className="glass-panel p-8 rounded-3xl relative group cursor-pointer overflow-hidden h-full border-t border-white/10 hover:border-cyan-500/30 block">
+								<div className="absolute -right-6 -top-6 text-cyan-500/5 group-hover:text-cyan-500/10 transition-colors duration-500">
+									<HandWaving size={150} weight="fill" className="transform rotate-12" />
+								</div>
+
+								<div className="relative z-10 flex flex-col h-full">
+									<div className="w-14 h-14 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-cyan-500/10">
+										<HandWaving size={32} weight="fill" />
+									</div>
+
+									<h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">Bienvenidas & Saludos</h3>
+									<p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">
+										Configura mensajes automáticos de bienvenida, despedida y autoroles para nuevos miembros.
+									</p>
+
+									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+										<HandWaving size={20} weight="bold" />
+										Gestionar Saludos
 									</div>
 								</div>
 							</Link>
