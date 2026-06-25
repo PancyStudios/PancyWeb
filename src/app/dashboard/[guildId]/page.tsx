@@ -395,6 +395,11 @@ export default function ServerDashboardPage() {
 						<span className="font-medium">Vista General</span>
 					</Link>
 
+					<Link href={`/dashboard/${guildId}/levels`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<Activity size={20} className="text-yellow-400 group-hover:scale-110 transition-transform" weight="duotone" />
+						<span className="font-medium">Niveles & XP</span>
+					</Link>
+
 					<div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 mt-8">Administración</div>
 
 					<Link href={`/dashboard/${guildId}/music`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
