@@ -139,8 +139,8 @@ export default function Home() {
 						<p className="text-gray-400">Módulos esenciales para el control total.</p>
 					</div>
 
-					<div className="grid md:grid-cols-3 gap-6">
-						<div className="glass-panel p-8 rounded-2xl text-center group">
+					<div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]">
 							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20 group-hover:scale-110 transition-transform">
 								<span className="text-3xl text-black font-bold">$</span>
 							</div>
@@ -148,7 +148,7 @@ export default function Home() {
 							<p className="text-sm text-gray-400">Sistema monetario global. Trabaja en las minas de asteroides, comercia y conviértete en el magnate del servidor.</p>
 						</div>
 
-						<div className="glass-panel p-8 rounded-2xl text-center group">
+						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]">
 							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform">
 								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
 							</div>
@@ -156,12 +156,20 @@ export default function Home() {
 							<p className="text-sm text-gray-400">Protocolos de moderación avanzados. Baneos temporales, purga de mensajes y logs de seguridad.</p>
 						</div>
 
-						<div className="glass-panel p-8 rounded-2xl text-center group">
+						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
 							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
 								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
 							</div>
-							<h3 className="text-xl font-bold text-white mb-3">Utilidades</h3>
-							<p className="text-sm text-gray-400">Herramientas para la tripulación. Avatares, información de usuario y comandos divertidos.</p>
+							<h3 className="text-xl font-bold text-white mb-3">Utilidades Extras</h3>
+							<p className="text-sm text-gray-400">Herramientas para la tripulación. Avatares, información de usuario y comandos divertidos para amenizar el viaje.</p>
+						</div>
+
+						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
+								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+							</div>
+							<h3 className="text-xl font-bold text-white mb-3">Niveles & Prestigio</h3>
+							<p className="text-sm text-gray-400">Sistema de experiencia nativo. Gana EXP chateando, lidera el leaderboard de tu servidor y desbloquea beneficios exclusivos.</p>
 						</div>
 					</div>
 				</div>

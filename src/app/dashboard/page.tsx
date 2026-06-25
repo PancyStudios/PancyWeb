@@ -6,7 +6,8 @@ import {
 	ArrowLeft,
 	List,
 	Bell,
-	CurrencyCircleDollar
+	CurrencyCircleDollar,
+	Terminal
 } from 'phosphor-react';
 import {redirect} from "next/navigation";
 
@@ -38,6 +39,7 @@ export default function DashboardPage() {
 	const [invitableGuilds, setInvitableGuilds] = useState<DiscordGuild[]>([]);
 	const [userPremium, setUserPremium] = useState<UserPremium | null>(null); // Estado para Premium
 	const [userData, setUserData] = useState<any>(null); // Para el avatar y nombre
+	const [isDeveloper, setIsDeveloper] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false); // Para móvil
 
@@ -61,7 +63,11 @@ export default function DashboardPage() {
 					return;
 				}
 
-				if (userRes.ok) setUserData(await userRes.json());
+				if (userRes.ok) {
+					const uData = await userRes.json();
+					setUserData(uData);
+					setIsDeveloper(!!uData.isDeveloper);
+				}
 				if (premiumRes.ok) setUserPremium(await premiumRes.json());
 
 				const managedRes = await fetch(`${API_BASE}/api/guilds`, opts);
@@ -257,12 +263,24 @@ export default function DashboardPage() {
 										</div>
 
 										<div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center relative z-10">
-                              <span className="text-[10px] font-bold bg-green-500/10 text-green-400 px-2 py-1 rounded-md uppercase tracking-wide border border-green-500/20">
-                                Activo
-                              </span>
-											<span className="text-sm font-bold text-white group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                Gestionar <ArrowLeft size={14} className="rotate-180" />
-                              </span>
+											<span className="text-[10px] font-bold bg-green-500/10 text-green-400 px-2 py-1 rounded-md uppercase tracking-wide border border-green-500/20">
+												Activo
+											</span>
+											<div className="flex items-center gap-2">
+												{isDeveloper && (
+													<Link
+														href={`/dashboard/developer/${guild.id}`}
+														onClick={e => e.stopPropagation()}
+														className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-400 hover:bg-purple-500/25 transition-all"
+														title="Dev Panel"
+													>
+														<Terminal size={14} />
+													</Link>
+												)}
+												<span className="text-sm font-bold text-white group-hover:translate-x-1 transition-transform flex items-center gap-1">
+													Gestionar <ArrowLeft size={14} className="rotate-180" />
+												</span>
+											</div>
 										</div>
 									</div>
 								</Link>

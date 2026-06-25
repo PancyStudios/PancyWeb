@@ -18,7 +18,7 @@ const nextConfig : NextConfig = {
 	generateBuildId: async () => {
 		return buildId;
 	},
-	allowedDevOrigins: ['*.miau.media', "pancy.dev.miau.media"],
+	allowedDevOrigins: ['*.miau.media', "pancy.dev.miau.media", "172.18.0.1"],
 	env: {
 		NEXT_PUBLIC_APP_VERSION: version,
 		NEXT_PUBLIC_COMMIT_HASH: commitHash,
