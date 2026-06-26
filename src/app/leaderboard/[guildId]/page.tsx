@@ -28,7 +28,7 @@ export default function PublicLeaderboardPage() {
 
         // Fetch leaderboard and basic info
         Promise.all([
-            fetch(`${API_BASE}/api/guilds/${guildId}/levels`).then(res => res.ok ? res.json() : []),
+            fetch(`${API_BASE}/api/public/leaderboard/${guildId}`).then(res => res.ok ? res.json() : []),
             // Optional: Fetch guild info if there is a public route, otherwise fallback to "el servidor"
         ]).then(([lbData]) => {
             if (Array.isArray(lbData)) setLeaderboard(lbData);
