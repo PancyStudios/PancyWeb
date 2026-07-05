@@ -20,7 +20,7 @@ export default function VerifyPage() {
     const [guildInfo, setGuildInfo] = useState<GuildInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
-    const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [result, setResult] = useState<{ success: boolean; message: string; alreadyVerified?: boolean } | null>(null);
 
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -61,7 +61,11 @@ export default function VerifyPage() {
             const data = await res.json();
 
             if (res.ok) {
-                setResult({ success: true, message: data.message || "¡Te has verificado correctamente!" });
+                if (data.alreadyVerified) {
+                    setResult({ success: true, message: data.message || "Ya estabas verificado.", alreadyVerified: true });
+                } else {
+                    setResult({ success: true, message: data.message || "¡Te has verificado correctamente!" });
+                }
             } else {
                 setResult({ success: false, message: data.message || "No se pudo completar la verificación." });
             }
@@ -150,19 +154,21 @@ export default function VerifyPage() {
 
                     {result && (
                         <div className="w-full pt-4 border-t border-white/5 animate-in slide-in-from-bottom-4">
-                            <div className={`p-6 rounded-2xl border flex flex-col items-center text-center ${result.success ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                                {result.success ? (
+                            <div className={`p-6 rounded-2xl border flex flex-col items-center text-center ${result.alreadyVerified ? 'bg-yellow-500/10 border-yellow-500/30' : result.success ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                                {result.alreadyVerified ? (
+                                    <ShieldCheck size={48} className="text-yellow-400 mb-4" weight="fill" />
+                                ) : result.success ? (
                                     <CheckCircle size={48} className="text-emerald-400 mb-4" weight="fill" />
                                 ) : (
                                     <Warning size={48} className="text-red-400 mb-4" weight="fill" />
                                 )}
-                                <h3 className={`text-xl font-bold mb-2 ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {result.success ? '¡Verificación Exitosa!' : 'Acceso Denegado'}
+                                <h3 className={`text-xl font-bold mb-2 ${result.alreadyVerified ? 'text-yellow-400' : result.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {result.alreadyVerified ? 'Ya estás verificado' : result.success ? '¡Verificación Exitosa!' : 'Acceso Denegado'}
                                 </h3>
                                 <p className="text-slate-300 text-sm">
                                     {result.message}
                                 </p>
-                                {result.success && (
+                                {result.success && !result.alreadyVerified && (
                                     <p className="text-xs text-slate-500 mt-4">
                                         Ya puedes volver a Discord y acceder a los canales.
                                     </p>
