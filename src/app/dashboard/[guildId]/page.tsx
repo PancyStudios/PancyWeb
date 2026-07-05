@@ -24,7 +24,8 @@ import {
 	Planet,
 	Copy,
 	Gauge,
-	HandWaving
+	HandWaving,
+	Cards
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -420,6 +421,11 @@ export default function ServerDashboardPage() {
 					<Link href={`/dashboard/${guildId}/greetings`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
 						<HandWaving size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" weight="duotone" />
 						<span className="font-medium">Saludos</span>
+					</Link>
+
+					<Link href={`/dashboard/${guildId}/embeds`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<Cards size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" weight="duotone" />
+						<span className="font-medium">Custom Embeds</span>
 					</Link>
 
 					<Link href={`/dashboard/${guildId}/config`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
