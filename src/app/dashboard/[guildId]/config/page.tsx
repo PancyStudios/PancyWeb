@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Wrench, FloppyDisk, CheckCircle, ChatCircleSlash, Translate, TerminalWindow, MonitorPlay } from 'phosphor-react';
+import { ArrowLeft, Wrench, FloppyDisk, CheckCircle, Prohibit, Translate, TerminalWindow, MonitorPlay } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
 
@@ -192,7 +192,7 @@ export default function GeneralConfigPage() {
                     
                     <div className="flex items-center justify-between border-b border-white/10 pb-6 relative z-10">
                         <div className="flex items-center gap-3">
-                            <ChatCircleSlash size={24} className="text-zinc-400" />
+                            <Prohibit size={24} className="text-zinc-400" />
                             <h3 className="text-xl font-bold text-white">Canales Ignorados</h3>
                         </div>
                     </div>
