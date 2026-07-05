@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Cards, FloppyDisk, CheckCircle, Trash, Plus, PaintBucket, TextT, Image as ImageIcon } from 'phosphor-react';
+import { ArrowLeft, Cards, FloppyDisk, CheckCircle, Trash, Plus, PaintBucket, TextAa, Image as ImageIcon } from 'phosphor-react';
 import { v4 as uuidv4 } from 'uuid'; // Next.js should resolve this, or we can use crypto.randomUUID()
 
 const API_BASE = "https://api.pancy.miau.media";
@@ -218,7 +218,7 @@ export default function EmbedsSettingsPage() {
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-white/10">
-                                <h4 className="font-bold text-indigo-400 flex items-center gap-2"><Text/> Contenido Principal</h4>
+                                <h4 className="font-bold text-indigo-400 flex items-center gap-2"><TextAa/> Contenido Principal</h4>
                                 
                                 <input 
                                     type="text" 
