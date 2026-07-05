@@ -3,188 +3,276 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Warning, UserMinus, HandPalm, Fire, CheckCircle, XCircle } from 'phosphor-react';
+import { ArrowLeft, ShieldCheck, FloppyDisk, CheckCircle, Warning, TextAa, LinkBreak, Trash, Plus } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
 
-interface Warn {
-    reason: string;
-    moderator: string;
-    id: string;
-    timestamp: number;
+interface DataModerationEvents {
+    capitalLetters: boolean;
+    linkDetect: boolean;
 }
 
-interface UserWarns {
-    guildId: string;
-    userId: string;
-    warns: Warn[];
+interface DataModerationConfig {
+    badwords: string[];
+    events: DataModerationEvents;
 }
 
-interface ProtectionConfig {
-    antiraid: { enable: boolean; amount: number };
-    antibots: { enable: boolean };
-    antijoins: { enable: boolean };
-    intelligentAntiflood: boolean;
+interface ModerationConfig {
+    dataModeration: DataModerationConfig;
 }
 
-export default function ModerationPage() {
+export default function ModerationSettingsPage() {
     const params = useParams();
     const guildId = typeof params?.guildId === 'string' ? params.guildId : '';
 
-    const [warns, setWarns] = useState<UserWarns[]>([]);
-    const [config, setConfig] = useState<ProtectionConfig | null>(null);
+    const [config, setConfig] = useState<ModerationConfig>({
+        dataModeration: {
+            badwords: [],
+            events: { capitalLetters: false, linkDetect: false }
+        }
+    });
+    
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<string | null>(null);
+    const [newBadword, setNewBadword] = useState<string>('');
 
     useEffect(() => {
         if (!guildId) return;
 
-        const fetchData = async () => {
-            try {
-                const [warnsRes, configRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/guilds/${guildId}/moderation/warns`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/api/guilds/${guildId}/moderation/config`, { credentials: 'include' })
-                ]);
-
-                if (warnsRes.ok) setWarns(await warnsRes.json());
-                if (configRes.ok) setConfig(await configRes.json());
-            } catch (err) {
-                console.error("Error loading moderation data:", err);
-            } finally {
+        fetch(`${API_BASE}/api/guilds/${guildId}/moderation/config`, { credentials: 'include' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.dataModeration) {
+                    setConfig({
+                        dataModeration: {
+                            badwords: data.dataModeration.badwords || [],
+                            events: {
+                                capitalLetters: data.dataModeration.events?.capitalLetters || false,
+                                linkDetect: data.dataModeration.events?.linkDetect || false
+                            }
+                        }
+                    });
+                }
                 setLoading(false);
-            }
-        };
-
-        fetchData();
+            })
+            .catch(err => {
+                console.error("Error loading config:", err);
+                setLoading(false);
+            });
     }, [guildId]);
 
-    if (loading) return <div className="p-10 text-center text-slate-400 animate-pulse">Cargando sistema de seguridad...</div>;
+    const handleSaveConfig = async () => {
+        setSaving(true);
+        setSaveStatus(null);
+        try {
+            const res = await fetch(`${API_BASE}/api/guilds/${guildId}/moderation/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    dataModeration: config.dataModeration
+                })
+            });
+            if (!res.ok) throw new Error("Error guardando");
+            setSaveStatus("✅ ¡Configuración guardada correctamente!");
+            setTimeout(() => setSaveStatus(null), 3000);
+        } catch (error) {
+            console.error(error);
+            setSaveStatus("❌ Error al guardar la configuración");
+        }
+        setSaving(false);
+    };
+
+    const handleAddBadword = () => {
+        const word = newBadword.trim().toLowerCase();
+        if (!word || config.dataModeration.badwords.includes(word)) return;
+        
+        setConfig({
+            ...config,
+            dataModeration: {
+                ...config.dataModeration,
+                badwords: [...config.dataModeration.badwords, word]
+            }
+        });
+        setNewBadword('');
+    };
+
+    const handleRemoveBadword = (word: string) => {
+        setConfig({
+            ...config,
+            dataModeration: {
+                ...config.dataModeration,
+                badwords: config.dataModeration.badwords.filter(w => w !== word)
+            }
+        });
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddBadword();
+        }
+    };
+
+    if (loading) return (
+        <div className="p-10 max-w-7xl mx-auto space-y-6 animate-pulse">
+            <div className="h-20 bg-white/5 rounded-3xl w-1/3 mb-10"></div>
+            {[1, 2].map(i => (
+                <div key={i} className="h-48 bg-white/5 rounded-2xl w-full"></div>
+            ))}
+        </div>
+    );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-
+        <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
+            
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center text-green-400 shadow-lg shadow-green-500/10">
+                    <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)]">
                         <ShieldCheck size={32} weight="fill" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Moderación y Seguridad</h1>
-                        <p className="text-slate-400">Gestiona sanciones y el sistema de protección automática.</p>
+                        <h1 className="text-3xl font-bold text-white tracking-wide">Automoderación</h1>
+                        <p className="text-slate-400">Protege tu servidor 24/7 automáticamente</p>
                     </div>
                 </div>
-                <Link href={`/dashboard/${guildId}`} className="hidden md:flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition-all">
-                    <span className="font-bold">Volver al Panel</span>
+                <Link href={`/dashboard/${guildId}`} className="flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-xl border border-white/10 transition-all group w-fit">
+                    <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                    <span className="font-bold">Volver</span>
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                {/* Left Column: Protection Status */}
-                <div className="space-y-6">
-                    <div className="glass-panel p-6 rounded-3xl border border-white/5">
-                        <h3 className="font-bold text-white mb-6 flex items-center gap-2">
-                            <Fire size={20} className="text-red-400" />
-                            Estado de Protección
-                        </h3>
-
-                        <div className="space-y-4">
-                            {/* Anti-Raid */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${config?.antiraid?.enable ? 'bg-green-500 shadow-[0_0_10px_lime]' : 'bg-red-500'}`}></div>
-                                    <div>
-                                        <div className="text-sm font-bold text-white">Anti-Raid</div>
-                                        <div className="text-xs text-slate-400">Límite: {config?.antiraid?.amount || 'N/A'} usuarios</div>
-                                    </div>
-                                </div>
-                                {config?.antiraid?.enable ? <CheckCircle size={20} className="text-green-500" weight="fill" /> : <XCircle size={20} className="text-red-500" weight="fill" />}
-                            </div>
-
-                            {/* Anti-Bots */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${config?.antibots?.enable ? 'bg-green-500 shadow-[0_0_10px_lime]' : 'bg-red-500'}`}></div>
-                                    <div>
-                                        <div className="text-sm font-bold text-white">Anti-Bots</div>
-                                        <div className="text-xs text-slate-400">Bloqueo de bots no verificados</div>
-                                    </div>
-                                </div>
-                                {config?.antibots?.enable ? <CheckCircle size={20} className="text-green-500" weight="fill" /> : <XCircle size={20} className="text-red-500" weight="fill" />}
-                            </div>
-
-                            {/* Anti-Flood */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${config?.intelligentAntiflood ? 'bg-green-500 shadow-[0_0_10px_lime]' : 'bg-red-500'}`}></div>
-                                    <div>
-                                        <div className="text-sm font-bold text-white">Anti-Flood IA</div>
-                                        <div className="text-xs text-slate-400">Detección inteligente de spam</div>
-                                    </div>
-                                </div>
-                                {config?.intelligentAntiflood ? <CheckCircle size={20} className="text-green-500" weight="fill" /> : <XCircle size={20} className="text-red-500" weight="fill" />}
-                            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+                
+                {/* BADWORDS PANEL */}
+                <div className="lg:col-span-2 glass-panel p-6 md:p-8 rounded-3xl border border-white/5 space-y-6 bg-black/20 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-[80px] pointer-events-none group-hover:bg-red-500/10 transition-colors"></div>
+                    
+                    <div className="flex items-center gap-4 border-b border-white/10 pb-6 relative z-10">
+                        <div className="p-3 bg-red-500/20 rounded-xl text-red-400">
+                            <Warning size={24} weight="duotone" />
                         </div>
-
-                        <div className="mt-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200 leading-relaxed">
-                            <span className="font-bold block mb-1 text-blue-400">ℹ Nota</span>
-                            Para modificar estos ajustes avanzados, utiliza los comandos del bot en Discord (`/setup security`).
+                        <div>
+                            <h3 className="text-xl font-bold text-white">Filtro de Malas Palabras</h3>
+                            <p className="text-sm text-slate-400">PancyBot borrará automáticamente los mensajes que contengan estas palabras.</p>
                         </div>
                     </div>
-                </div>
 
-                {/* Right Column: Recent Warns */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="glass-panel p-8 rounded-3xl border border-white/5 min-h-[500px]">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-bold text-white flex items-center gap-2">
-                                <Warning size={20} className="text-amber-400" />
-                                Advertencias Recientes
-                            </h3>
-                            <span className="text-xs font-bold text-slate-500 bg-white/5 px-3 py-1 rounded-full">
-                                Total: {warns.reduce((acc, curr) => acc + curr.warns.length, 0)}
-                            </span>
+                    <div className="space-y-4 relative z-10">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <input 
+                                type="text" 
+                                placeholder="Escribe una palabra y presiona Enter..." 
+                                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                                value={newBadword}
+                                onChange={(e) => setNewBadword(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                            <button 
+                                onClick={handleAddBadword}
+                                className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                <Plus size={18} weight="bold" /> Añadir
+                            </button>
                         </div>
 
-                        <div className="space-y-3">
-                            {warns.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-                                    <HandPalm size={48} className="mb-4 opacity-20" />
-                                    <p>No hay advertencias registradas.</p>
+                        <div className="bg-black/30 border border-white/5 rounded-2xl p-4 min-h-[200px] flex flex-wrap gap-2 content-start">
+                            {config.dataModeration.badwords.length === 0 ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 py-10">
+                                    <Warning size={48} weight="thin" className="mb-3 opacity-50" />
+                                    <p>Tu lista está vacía. Añade palabras arriba.</p>
                                 </div>
                             ) : (
-                                warns.flatMap(u => u.warns.map(w => ({ ...w, userId: u.userId }))).sort((a, b) => b.timestamp - a.timestamp).map((warn, i) => (
-                                    <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 font-bold">
-                                                    !
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-bold text-white mb-1">
-                                                        Usuario ID: <span className="font-mono text-slate-400">{warn.userId}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-300 leading-relaxed">{warn.reason}</p>
-                                                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                                                        <span className="flex items-center gap-1">
-                                                            <ShieldCheck size={12} /> Mod: {warn.moderator}
-                                                        </span>
-                                                        <span>•</span>
-                                                        <span>{new Date(warn.timestamp).toLocaleDateString()}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button className="text-slate-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100">
-                                                <UserMinus size={18} />
-                                            </button>
-                                        </div>
+                                config.dataModeration.badwords.map(word => (
+                                    <div key={word} className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5 group hover:bg-red-500/20 transition-all">
+                                        <span className="text-sm font-medium text-red-200">{word}</span>
+                                        <button 
+                                            onClick={() => handleRemoveBadword(word)}
+                                            className="ml-1 text-red-400/50 hover:text-red-400 transition-colors"
+                                        >
+                                            <Trash size={16} />
+                                        </button>
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
                 </div>
+
+                {/* ADVANCED FILTERS PANEL */}
+                <div className="lg:col-span-1 glass-panel p-6 md:p-8 rounded-3xl border border-white/5 space-y-6 bg-black/20 overflow-hidden relative group h-fit">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[80px] pointer-events-none group-hover:bg-orange-500/10 transition-colors"></div>
+                    
+                    <div className="border-b border-white/10 pb-6 relative z-10">
+                        <h3 className="text-xl font-bold text-white mb-1">Filtros Avanzados</h3>
+                        <p className="text-sm text-slate-400">Reglas estrictas para el chat.</p>
+                    </div>
+
+                    <div className="space-y-6 relative z-10">
+                        
+                        {/* Anti-Links */}
+                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
+                                    <LinkBreak size={20} weight="duotone" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-sm">Anti-Links</h4>
+                                    <p className="text-xs text-slate-400">Bloquea cualquier enlace.</p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={config.dataModeration.events.linkDetect} onChange={(e) => setConfig({ ...config, dataModeration: { ...config.dataModeration, events: { ...config.dataModeration.events, linkDetect: e.target.checked } } })} />
+                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500 shadow-inner"></div>
+                            </label>
+                        </div>
+
+                        {/* Anti-Caps */}
+                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
+                                    <TextAa size={20} weight="duotone" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-sm">Anti-Mayúsculas</h4>
+                                    <p className="text-xs text-slate-400">Bloquea texto gritando.</p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={config.dataModeration.events.capitalLetters} onChange={(e) => setConfig({ ...config, dataModeration: { ...config.dataModeration, events: { ...config.dataModeration.events, capitalLetters: e.target.checked } } })} />
+                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500 shadow-inner"></div>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
+
+            {/* SAVE BUTTON BOTTOM BAR */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-black/60 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-center pointer-events-none">
+                <div className="max-w-7xl w-full flex items-center justify-between pointer-events-auto">
+                    <div className="text-sm font-medium">
+                        {saveStatus && (
+                            <span className={`flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 ${saveStatus.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+                                {saveStatus.includes('✅') && <CheckCircle size={18} weight="fill" />}
+                                {saveStatus}
+                            </span>
+                        )}
+                    </div>
+                    <button 
+                        onClick={handleSaveConfig}
+                        disabled={saving}
+                        className={`bg-orange-500 hover:bg-orange-400 text-black font-black px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] ${saving ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                    >
+                        <FloppyDisk size={20} weight={saving ? "duotone" : "bold"} className={saving ? "animate-pulse" : ""} />
+                        {saving ? 'Guardando...' : 'Guardar Cambios'}
+                    </button>
+                </div>
+            </div>
+
         </div>
     );
 }
