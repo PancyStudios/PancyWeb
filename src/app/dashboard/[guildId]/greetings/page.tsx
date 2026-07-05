@@ -11,6 +11,7 @@ interface WelcomeConfig {
     enable: boolean;
     channel: string;
     message: string;
+    embedId: string;
     isDM: boolean;
 }
 
@@ -18,6 +19,7 @@ interface FarewellConfig {
     enable: boolean;
     channel: string;
     message: string;
+    embedId: string;
 }
 
 interface AutoroleConfig {
@@ -45,12 +47,13 @@ export default function GreetingsSettingsPage() {
     const guildId = typeof params?.guildId === 'string' ? params.guildId : '';
 
     const [config, setConfig] = useState<GreetingsConfig>({
-        welcome: { enable: false, channel: "", message: "", isDM: false },
-        farewell: { enable: false, channel: "", message: "" },
+        welcome: { enable: false, channel: "", message: "", embedId: "", isDM: false },
+        farewell: { enable: false, channel: "", message: "", embedId: "" },
         autorole: { enable: false, roles: [], delay: 0 }
     });
     
     const [guildInfo, setGuildInfo] = useState<GuildInfo | null>(null);
+    const [embeds, setEmbeds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -61,17 +64,19 @@ export default function GreetingsSettingsPage() {
 
         Promise.all([
             fetch(`${API_BASE}/api/guilds/${guildId}/greetings`, { credentials: 'include' }).then(res => res.ok ? res.json() : null),
-            fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' }).then(res => res.ok ? res.json() : null)
-        ]).then(([configData, infoData]) => {
+            fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' }).then(res => res.ok ? res.json() : null),
+            fetch(`${API_BASE}/api/guilds/${guildId}/embeds`, { credentials: 'include' }).then(res => res.ok ? res.json() : [])
+        ]).then(([configData, infoData, embedsData]) => {
             if (configData) {
                 // Merge with defaults in case some fields are missing
                 setConfig({
-                    welcome: { enable: false, channel: "", message: "", isDM: false, ...configData.welcome },
-                    farewell: { enable: false, channel: "", message: "", ...configData.farewell },
+                    welcome: { enable: false, channel: "", message: "", embedId: "", isDM: false, ...configData.welcome },
+                    farewell: { enable: false, channel: "", message: "", embedId: "", ...configData.farewell },
                     autorole: { enable: false, roles: [], delay: 0, ...configData.autorole }
                 });
             }
             if (infoData) setGuildInfo(infoData);
+            if (embedsData) setEmbeds(embedsData);
             setLoading(false);
         }).catch(err => {
             console.error("Error loading config:", err);
@@ -200,7 +205,7 @@ export default function GreetingsSettingsPage() {
                         </div>
 
                         <div className="space-y-3">
-                            <label className="block text-sm font-bold text-slate-300">Contenido del Mensaje</label>
+                            <label className="block text-sm font-bold text-slate-300">Mensaje de Texto (Opcional si usas Embed)</label>
                             <textarea 
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all resize-none"
                                 rows={3}
@@ -209,6 +214,21 @@ export default function GreetingsSettingsPage() {
                                 onChange={(e) => setConfig({ ...config, welcome: { ...config.welcome, message: e.target.value } })}
                             />
                             <p className="text-xs text-slate-500">Usa <code className="text-cyan-400 bg-cyan-400/10 px-1 rounded">{'{user}'}</code> para mencionar al usuario.</p>
+                        </div>
+
+                        <div className="space-y-3 pt-2">
+                            <label className="block text-sm font-bold text-slate-300">Custom Embed (Opcional)</label>
+                            <select 
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all appearance-none"
+                                value={config.welcome.embedId}
+                                onChange={(e) => setConfig({ ...config, welcome: { ...config.welcome, embedId: e.target.value } })}
+                            >
+                                <option value="">Ninguno (Solo enviar texto)</option>
+                                {embeds.map(e => (
+                                    <option key={e.id} value={e.id}>{e.name}</option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-slate-500">Puedes crear embeds en la sección <Link href={`/dashboard/${guildId}/embeds`} className="text-cyan-400 hover:underline">Custom Embeds</Link>.</p>
                         </div>
                     </div>
                 </div>
@@ -249,7 +269,7 @@ export default function GreetingsSettingsPage() {
                         </div>
 
                         <div className="space-y-3">
-                            <label className="block text-sm font-bold text-slate-300">Contenido del Mensaje</label>
+                            <label className="block text-sm font-bold text-slate-300">Mensaje de Texto (Opcional si usas Embed)</label>
                             <textarea 
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all resize-none"
                                 rows={2}
@@ -258,6 +278,20 @@ export default function GreetingsSettingsPage() {
                                 onChange={(e) => setConfig({ ...config, farewell: { ...config.farewell, message: e.target.value } })}
                             />
                             <p className="text-xs text-slate-500">Usa <code className="text-red-400 bg-red-400/10 px-1 rounded">{'{user}'}</code> para mostrar el nombre del usuario (sin mención, ya que no está).</p>
+                        </div>
+
+                        <div className="space-y-3 pt-2">
+                            <label className="block text-sm font-bold text-slate-300">Custom Embed (Opcional)</label>
+                            <select 
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all appearance-none"
+                                value={config.farewell.embedId}
+                                onChange={(e) => setConfig({ ...config, farewell: { ...config.farewell, embedId: e.target.value } })}
+                            >
+                                <option value="">Ninguno (Solo enviar texto)</option>
+                                {embeds.map(e => (
+                                    <option key={e.id} value={e.id}>{e.name}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
