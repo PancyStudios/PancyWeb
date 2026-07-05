@@ -140,8 +140,8 @@ export default function GreetingsSettingsPage() {
                         <HandWaving size={32} weight="fill" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-wide">Saludos y Bienvenidas</h1>
-                        <p className="text-slate-400">Recibe a tus usuarios con estilo</p>
+                        <h1 className="text-3xl font-bold text-white tracking-wide">Saludos y Despedidas</h1>
+                        <p className="text-slate-400">Recibe y despide a tus usuarios con estilo</p>
                     </div>
                 </div>
                 <Link href={`/dashboard/${guildId}`} className="flex items-center gap-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-xl border border-white/10 transition-all group w-fit">
