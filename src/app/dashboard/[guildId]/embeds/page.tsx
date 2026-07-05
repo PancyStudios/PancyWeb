@@ -218,7 +218,7 @@ export default function EmbedsSettingsPage() {
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-white/10">
-                                <h4 className="font-bold text-indigo-400 flex items-center gap-2"><TextAa /> Contenido Principal</h4>
+                                <h4 className="font-bold text-indigo-400 flex items-center gap-2"><Text/> Contenido Principal</h4>
                                 
                                 <input 
                                     type="text" 
