@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Cards, FloppyDisk, CheckCircle, Trash, Plus, PaintBucket, TextAa, Image as ImageIcon } from 'phosphor-react';
+import { ArrowLeft, Cards, FloppyDisk, CheckCircle, Trash, Plus, PaintBucket, TextAa, Image as ImageIcon, PaperPlaneRight } from 'phosphor-react';
 import { v4 as uuidv4 } from 'uuid'; // Next.js should resolve this, or we can use crypto.randomUUID()
 
 const API_BASE = "https://api.pancy.miau.media";
@@ -34,6 +34,11 @@ export default function EmbedsSettingsPage() {
     const [saving, setSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
+    // Channels for sending
+    const [channels, setChannels] = useState<{id: string, name: string}[]>([]);
+    const [selectedChannel, setSelectedChannel] = useState<string>('');
+    const [sending, setSending] = useState(false);
+
     useEffect(() => {
         if (!guildId) return;
 
@@ -48,6 +53,17 @@ export default function EmbedsSettingsPage() {
                 console.error("Error loading embeds:", err);
                 setLoading(false);
             });
+
+        // Load channels for the selector
+        fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' })
+            .then(res => res.ok ? res.json() : {})
+            .then(data => {
+                if (data.channels) {
+                    setChannels(data.channels);
+                    if (data.channels.length > 0) setSelectedChannel(data.channels[0].id);
+                }
+            })
+            .catch(console.error);
     }, [guildId]);
 
     const handleCreateNew = () => {
@@ -89,6 +105,32 @@ export default function EmbedsSettingsPage() {
             setSaveStatus("❌ Error al guardar");
         }
         setSaving(false);
+    };
+
+    const handleSend = async () => {
+        if (!activeEmbed || !activeEmbed.id) return alert("Por favor guarda el embed primero antes de enviarlo.");
+        if (!selectedChannel) return alert("Selecciona un canal válido.");
+        
+        setSending(true);
+        setSaveStatus(null);
+        try {
+            const res = await fetch(`${API_BASE}/api/guilds/${guildId}/embeds/${activeEmbed.id}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ channelId: selectedChannel })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSaveStatus("✅ ¡Enviado al canal!");
+            } else {
+                setSaveStatus("❌ Error: " + data.message);
+            }
+            setTimeout(() => setSaveStatus(null), 3000);
+        } catch (error) {
+            setSaveStatus("❌ Error de red");
+        }
+        setSending(false);
     };
 
     const handleDelete = async (id: string) => {
@@ -382,22 +424,48 @@ export default function EmbedsSettingsPage() {
 
             {/* SAVE BUTTON BOTTOM BAR */}
             <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-black/60 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-center pointer-events-none">
-                <div className="max-w-7xl w-full flex items-center justify-between pointer-events-auto">
-                    <div className="text-sm font-medium">
+                <div className="max-w-7xl w-full flex items-center justify-between pointer-events-auto gap-4">
+                    <div className="text-sm font-medium flex-1">
                         {saveStatus && (
-                            <span className={`flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 ${saveStatus.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 ${saveStatus.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
                                 {saveStatus.includes('✅') && <CheckCircle size={18} weight="fill" />}
                                 {saveStatus}
                             </span>
                         )}
                     </div>
+                    
+                    {/* SEND TO CHANNEL */}
+                    {activeEmbed && (
+                        <div className="flex items-center gap-2 bg-black/40 p-2 rounded-xl border border-white/5">
+                            <select 
+                                className="bg-transparent text-white text-sm focus:outline-none px-2 py-1 max-w-[150px] md:max-w-[200px]"
+                                value={selectedChannel}
+                                onChange={(e) => setSelectedChannel(e.target.value)}
+                            >
+                                <option value="" disabled className="text-black">Selecciona un canal</option>
+                                {channels.map(c => (
+                                    <option key={c.id} value={c.id} className="text-black"># {c.name}</option>
+                                ))}
+                            </select>
+                            <button 
+                                onClick={handleSend}
+                                disabled={sending || saving || !activeEmbed.id}
+                                className={`bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${(sending || saving || !activeEmbed.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Enviar mensaje ahora mismo al servidor"
+                            >
+                                <PaperPlaneRight size={18} weight={sending ? "duotone" : "bold"} className={sending ? "animate-pulse" : ""} />
+                                <span className="hidden sm:inline">{sending ? 'Enviando...' : 'Enviar'}</span>
+                            </button>
+                        </div>
+                    )}
+
                     <button 
                         onClick={handleSaveConfig}
                         disabled={saving || !activeEmbed}
-                        className={`bg-indigo-500 hover:bg-indigo-400 text-white font-black px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] ${(saving || !activeEmbed) ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                        className={`bg-indigo-500 hover:bg-indigo-400 text-white font-black px-6 sm:px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] ${(saving || !activeEmbed) ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-1'}`}
                     >
                         <FloppyDisk size={20} weight={saving ? "duotone" : "bold"} className={saving ? "animate-pulse" : ""} />
-                        {saving ? 'Guardando...' : 'Guardar Cambios'}
+                        <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Cambios'}</span>
                     </button>
                 </div>
             </div>
