@@ -21,8 +21,10 @@ interface SecurityConfig {
     };
     verification: {
         enable: boolean;
+        _type: string;
         channel: string;
         role: string;
+        minAccountAgeDays: number;
     };
 }
 
@@ -32,7 +34,7 @@ export default function SecurityPage() {
 
     const [config, setConfig] = useState<SecurityConfig>({
         antibots: { enable: false, _type: "all" },
-        verification: { enable: false, channel: "", role: "" }
+        verification: { enable: false, _type: "button", channel: "", role: "", minAccountAgeDays: 0 }
     });
     
     const [guildInfo, setGuildInfo] = useState<GuildInfo | null>(null);
@@ -55,8 +57,10 @@ export default function SecurityPage() {
                     },
                     verification: { 
                         enable: configData.verification?.enable || false, 
+                        _type: configData.verification?._type || "button",
                         channel: configData.verification?.channel || "",
-                        role: configData.verification?.role || ""
+                        role: configData.verification?.role || "",
+                        minAccountAgeDays: configData.verification?.minAccountAgeDays || 0
                     }
                 });
             }
@@ -185,34 +189,74 @@ export default function SecurityPage() {
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-bold text-slate-300 mb-2 block">Canal de Verificación</label>
-                                <select 
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
-                                    value={config.verification.channel}
-                                    onChange={(e) => setConfig({ ...config, verification: { ...config.verification, channel: e.target.value } })}
-                                >
-                                    <option value="">Selecciona un canal...</option>
-                                    {guildInfo?.channels?.map(ch => (
-                                        <option key={ch.id} value={ch.id}># {ch.name}</option>
-                                    ))}
-                                </select>
+                                <label className="text-sm font-bold text-slate-300 mb-2 block">Modo de Verificación</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfig({ ...config, verification: { ...config.verification, _type: "button" } })}
+                                        className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all ${config.verification._type === "button" ? 'bg-emerald-500/20 border-emerald-500 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                                    >
+                                        <CheckCircle size={24} weight="duotone" className="mb-2" />
+                                        <span className="font-bold text-sm">Botón de Discord</span>
+                                        <span className="text-xs opacity-70 mt-1">Rápido y sencillo</span>
+                                    </button>
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfig({ ...config, verification: { ...config.verification, _type: "web" } })}
+                                        className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all ${config.verification._type === "web" ? 'bg-emerald-500/20 border-emerald-500 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                                    >
+                                        <ShieldCheck size={24} weight="duotone" className="mb-2" />
+                                        <span className="font-bold text-sm">Portal Web Seguro</span>
+                                        <span className="text-xs opacity-70 mt-1">Bloquea VPNs y Alts</span>
+                                    </button>
+                                </div>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-bold text-slate-300 mb-2 block">Canal de Verificación</label>
+                                    <select 
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
+                                        value={config.verification.channel}
+                                        onChange={(e) => setConfig({ ...config, verification: { ...config.verification, channel: e.target.value } })}
+                                    >
+                                        <option value="">Selecciona un canal...</option>
+                                        {guildInfo?.channels?.map(ch => (
+                                            <option key={ch.id} value={ch.id}># {ch.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-bold text-slate-300 mb-2 block">Rol de Verificado</label>
+                                    <select 
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
+                                        value={config.verification.role}
+                                        onChange={(e) => setConfig({ ...config, verification: { ...config.verification, role: e.target.value } })}
+                                    >
+                                        <option value="">Selecciona un rol...</option>
+                                        {guildInfo?.roles?.map(r => (
+                                            <option key={r.id} value={r.id}>{r.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            
                             <div>
-                                <label className="text-sm font-bold text-slate-300 mb-2 block">Rol de Verificado</label>
-                                <select 
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
-                                    value={config.verification.role}
-                                    onChange={(e) => setConfig({ ...config, verification: { ...config.verification, role: e.target.value } })}
-                                >
-                                    <option value="">Selecciona un rol...</option>
-                                    {guildInfo?.roles?.map(r => (
-                                        <option key={r.id} value={r.id}>{r.name}</option>
-                                    ))}
-                                </select>
+                                <label className="text-sm font-bold text-slate-300 block mb-1">Antigüedad Mínima (Días)</label>
+                                <p className="text-xs text-slate-500 mb-2">Rechazar cuentas con menos de X días de creadas. (0 para desactivar)</p>
+                                <input 
+                                    type="number"
+                                    min="0"
+                                    max="365"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                                    value={config.verification.minAccountAgeDays}
+                                    onChange={(e) => setConfig({ ...config, verification: { ...config.verification, minAccountAgeDays: parseInt(e.target.value) || 0 } })}
+                                />
                             </div>
 
-                            <div className="pt-4">
+                            <div className="pt-2">
                                 <p className="text-xs text-slate-500 bg-white/5 p-3 rounded-xl border border-white/10">
                                     <strong>¿Cómo envío el panel?</strong><br/>
                                     Ve a tu servidor de Discord y ejecuta el comando <code className="text-emerald-400">/security verification panel</code>. El bot enviará el mensaje con el botón al canal seleccionado.
