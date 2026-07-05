@@ -22,24 +22,29 @@ export default function VerifyPage() {
     const [verifying, setVerifying] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
     useEffect(() => {
         if (!guildId) return;
         
         // Cargar info del servidor para mostrar en la interfaz
         fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' })
-            .then(res => {
-                if (res.status === 401) {
-                    const currentUrl = window.location.href;
-                    window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
-                    return null;
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                if (data) setGuildInfo(data);
+                if (data && !data.message) setGuildInfo(data);
+            })
+            .catch(() => {});
+
+        // Verificar si el usuario está logueado
+        fetch(`${API_BASE}/api/users`, { credentials: 'include' })
+            .then(res => {
+                setIsAuthenticated(res.ok);
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch(() => {
+                setIsAuthenticated(false);
+                setLoading(false);
+            });
     }, [guildId]);
 
     const handleVerify = async () => {
@@ -119,7 +124,7 @@ export default function VerifyPage() {
                             </div>
 
                             <button 
-                                onClick={handleVerify}
+                                onClick={isAuthenticated ? handleVerify : () => window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`}
                                 disabled={verifying}
                                 className={`w-full mt-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${verifying ? 'bg-emerald-500/50 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 hover:-translate-y-1 shadow-[0_0_20px_rgba(16,185,129,0.4)]'}`}
                             >
@@ -128,10 +133,15 @@ export default function VerifyPage() {
                                         <Robot size={22} className="animate-pulse" />
                                         Analizando perfil...
                                     </>
-                                ) : (
+                                ) : isAuthenticated ? (
                                     <>
                                         <ShieldCheck size={22} weight="bold" />
                                         Verificar mi cuenta
+                                    </>
+                                ) : (
+                                    <>
+                                        <ShieldCheck size={22} weight="bold" />
+                                        Iniciar sesión con Discord
                                     </>
                                 )}
                             </button>
