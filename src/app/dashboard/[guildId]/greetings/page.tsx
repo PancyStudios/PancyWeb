@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, HandWaving, FloppyDisk, CheckCircle, ChatCircle, HandPeace, IdentificationCard, Trash, Plus } from 'phosphor-react';
+import { ArrowLeft, HandWaving, FloppyDisk, CheckCircle, ChatCircle, Hand, IdentificationCard, Trash, Plus } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
 
@@ -220,7 +220,7 @@ export default function GreetingsSettingsPage() {
                     <div className="flex items-center justify-between border-b border-white/10 pb-6 relative z-10">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-red-500/20 rounded-xl text-red-400">
-                                <HandPeace size={24} weight="duotone" />
+                                <Hand size={24} weight="duotone" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-white">Mensaje de Despedida</h3>
