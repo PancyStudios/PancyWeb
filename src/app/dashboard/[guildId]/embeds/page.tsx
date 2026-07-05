@@ -56,8 +56,8 @@ export default function EmbedsSettingsPage() {
 
         // Load channels for the selector
         fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' })
-            .then(res => res.ok ? res.json() : {})
-            .then(data => {
+            .then(res => res.ok ? res.json() : { channels: [] })
+            .then((data: any) => {
                 if (data.channels) {
                     setChannels(data.channels);
                     if (data.channels.length > 0) setSelectedChannel(data.channels[0].id);
