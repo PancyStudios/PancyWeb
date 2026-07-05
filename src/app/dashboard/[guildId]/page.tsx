@@ -413,6 +413,11 @@ export default function ServerDashboardPage() {
 						<span className="font-medium">Moderación</span>
 					</Link>
 
+					<Link href={`/dashboard/${guildId}/security`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<ShieldCheck size={20} className="text-orange-400 group-hover:scale-110 transition-transform" weight="fill" />
+						<span className="font-medium">Seguridad / Anti-Raid</span>
+					</Link>
+
 					<Link href={`/dashboard/${guildId}/logs`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
 						<Scroll size={20} className="text-amber-400 group-hover:scale-110 transition-transform" weight="duotone" />
 						<span className="font-medium">Logs & Auditoría</span>
