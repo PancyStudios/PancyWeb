@@ -25,7 +25,10 @@ import {
 	Copy,
 	Gauge,
 	HandWaving,
-	Cards
+	Gear,
+	CheckCircle,
+	Cards,
+	BellRinging
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -429,8 +432,13 @@ export default function ServerDashboardPage() {
 					</Link>
 
 					<Link href={`/dashboard/${guildId}/embeds`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
-						<Cards size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" weight="duotone" />
-						<span className="font-medium">Custom Embeds</span>
+						<Cards size={20} className="group-hover:text-indigo-400 transition-colors" />
+						<span className="font-medium text-sm">Custom Embeds</span>
+					</Link>
+					
+					<Link href={`/dashboard/${guildId}/poj`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<BellRinging size={20} className="group-hover:text-amber-400 transition-colors" />
+						<span className="font-medium text-sm">Ping On Join</span>
 					</Link>
 
 					<Link href={`/dashboard/${guildId}/config`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
