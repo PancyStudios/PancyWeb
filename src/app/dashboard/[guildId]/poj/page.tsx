@@ -45,7 +45,7 @@ export default function PojSettingsPage() {
         // Fetch channels and roles
         fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' })
             .then(res => res.ok ? res.json() : {})
-            .then(data => {
+            .then((data: any) => {
                 if (data.channels) setChannels(data.channels);
                 if (data.roles) setRoles(data.roles);
             })
