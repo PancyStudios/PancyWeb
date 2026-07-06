@@ -23,7 +23,6 @@ export default function PojSettingsPage() {
     
     // New Config Form
     const [selectedChannel, setSelectedChannel] = useState<string>('');
-    const [selectedRole, setSelectedRole] = useState<string>('');
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState<string | null>(null);
 
@@ -47,13 +46,12 @@ export default function PojSettingsPage() {
             .then(res => res.ok ? res.json() : {})
             .then((data: any) => {
                 if (data.channels) setChannels(data.channels);
-                if (data.roles) setRoles(data.roles);
             })
             .catch(console.error);
     }, [guildId]);
 
     const handleAdd = async () => {
-        if (!selectedChannel || !selectedRole) return alert("Selecciona un canal y un rol");
+        if (!selectedChannel) return alert("Selecciona un canal");
         
         setSaving(true);
         setStatus(null);
@@ -62,7 +60,7 @@ export default function PojSettingsPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ channelId: selectedChannel, roleId: selectedRole })
+                body: JSON.stringify({ channelId: selectedChannel })
             });
             if (!res.ok) throw new Error("Error guardando");
             const updated = await res.json();
@@ -70,7 +68,6 @@ export default function PojSettingsPage() {
             
             setStatus("✅ Configuración añadida");
             setSelectedChannel('');
-            setSelectedRole('');
             setTimeout(() => setStatus(null), 3000);
         } catch (error) {
             console.error(error);
@@ -136,17 +133,10 @@ export default function PojSettingsPage() {
                         </div>
                     )}
                     {pojList.map(poj => {
-                        const channel = channels.find(c => c.id === poj.channelId);
-                        const role = roles.find(r => r.id === poj.roleId);
                         return (
                             <div key={poj.channelId} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group hover:border-amber-500/30 transition-all">
-                                <div>
-                                    <div className="font-bold text-white mb-1">
-                                        Canal: <span className="text-amber-400">#{channel ? channel.name : poj.channelId}</span>
-                                    </div>
-                                    <div className="text-sm text-slate-400">
-                                        Ping a: <span className="text-indigo-300">@{role ? role.name : poj.roleId}</span>
-                                    </div>
+                                <div className="flex items-center gap-4 text-white/70 bg-black/20 p-3 rounded-lg border border-white/5">
+                                    <span>Canal: <strong className="text-white">#{channels.find((c: any) => c.id === poj.channelId)?.name || poj.channelId}</strong></span>
                                 </div>
                                 <button 
                                     onClick={() => handleDelete(poj.channelId)}
@@ -165,34 +155,28 @@ export default function PojSettingsPage() {
                         <Plus className="text-amber-400"/> Añadir Configuración
                     </h3>
                     
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase">Canal de Texto</label>
-                        <select 
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-                            value={selectedChannel}
-                            onChange={e => setSelectedChannel(e.target.value)}
-                        >
-                            <option value="" disabled>Selecciona el canal destino...</option>
-                            {channels.map(c => <option key={c.id} value={c.id}># {c.name}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase">Rol a Mencionar</label>
-                        <select 
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-                            value={selectedRole}
-                            onChange={e => setSelectedRole(e.target.value)}
-                        >
-                            <option value="" disabled>Selecciona el rol...</option>
-                            {roles.map(r => <option key={r.id} value={r.id}>@ {r.name}</option>)}
-                        </select>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-white/70">Selecciona el Canal (Ghost Ping)</label>
+                            <select
+                                value={selectedChannel}
+                                onChange={(e) => setSelectedChannel(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent transition-all"
+                            >
+                                <option value="" className="bg-[#12121a]">-- Selecciona --</option>
+                                {channels.map((ch: any) => (
+                                    <option key={ch.id} value={ch.id} className="bg-[#12121a]">
+                                        #{ch.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <button 
                         onClick={handleAdd}
-                        disabled={saving || !selectedChannel || !selectedRole}
-                        className={`w-full bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl transition-all flex justify-center items-center gap-2 ${(saving || !selectedChannel || !selectedRole) ? 'opacity-50 cursor-not-allowed' : 'shadow-[0_0_15px_rgba(251,191,36,0.3)]'}`}
+                        disabled={saving || !selectedChannel}
+                        className={`w-full bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-xl transition-all flex justify-center items-center gap-2 ${(saving || !selectedChannel) ? 'opacity-50 cursor-not-allowed' : 'shadow-[0_0_15px_rgba(251,191,36,0.3)]'}`}
                     >
                         <FloppyDisk size={20} weight={saving ? "duotone" : "bold"} className={saving ? "animate-pulse" : ""} />
                         {saving ? 'Guardando...' : 'Añadir Ping On Join'}
