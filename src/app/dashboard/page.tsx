@@ -38,7 +38,8 @@ export default function DashboardPage() {
 	const [managedGuilds, setManagedGuilds] = useState<DiscordGuild[]>([]);
 	const [invitableGuilds, setInvitableGuilds] = useState<DiscordGuild[]>([]);
 	const [userPremium, setUserPremium] = useState<UserPremium | null>(null); // Estado para Premium
-	const [userData, setUserData] = useState<any>(null); // Para el avatar y nombre
+	const [userData, setUserData] = useState<any>(null); // Para el nombre
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 	const [isDeveloper, setIsDeveloper] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false); // Para móvil
@@ -52,12 +53,13 @@ export default function DashboardPage() {
 					method: 'GET'
 				};
 
-				const [userRes, premiumRes] = await Promise.all([
+				const [userRes, premiumRes, avatarRes] = await Promise.all([
 					fetch(`${API_BASE}/api/users`, opts),
-					fetch(`${API_BASE}/api/users/premium`, opts)
+					fetch(`${API_BASE}/api/users/premium`, opts),
+					fetch(`${API_BASE}/api/users/avatar`, opts)
 				]);
 
-				if (userRes.status === 401 || premiumRes.status === 401) {
+				if (userRes.status === 401 || premiumRes.status === 401 || avatarRes.status === 401) {
 					const currentUrl = window.location.href;
 					window.location.href = `${API_BASE}/api/auth/discord?redirect=${encodeURIComponent(currentUrl)}`;
 					return;
@@ -69,6 +71,10 @@ export default function DashboardPage() {
 					setIsDeveloper(!!uData.isDeveloper);
 				}
 				if (premiumRes.ok) setUserPremium(await premiumRes.json());
+				if (avatarRes.ok) {
+					const avData = await avatarRes.json();
+					setAvatarUrl(avData.avatarURL);
+				}
 
 				const managedRes = await fetch(`${API_BASE}/api/guilds`, opts);
 
@@ -203,9 +209,8 @@ export default function DashboardPage() {
 								</div>
 							</div>
 							<div className="w-10 h-10 rounded-full p-[1px] bg-gradient-to-tr from-cyan-500 to-purple-600 overflow-hidden shadow-lg shadow-purple-500/20">
-								{/* Usamos el endpoint de avatar que creaste en el backend */}
 								<img
-									src={`${API_BASE}/api/users/avatar`}
+									src={avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'}
 									className="w-full h-full rounded-full object-cover bg-black"
 									alt="Avatar"
 									onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png'; }}

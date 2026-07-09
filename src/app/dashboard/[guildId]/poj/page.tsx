@@ -3,13 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, BellRinging, Trash, Plus, FloppyDisk, CheckCircle } from 'phosphor-react';
+import { ArrowLeft, BellRinging, Trash, Plus, FloppyDisk } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
 
 interface PojConfig {
     channelId: string;
-    roleId: string;
 }
 
 export default function PojSettingsPage() {
@@ -18,7 +17,7 @@ export default function PojSettingsPage() {
 
     const [pojList, setPojList] = useState<PojConfig[]>([]);
     const [channels, setChannels] = useState<{id: string, name: string}[]>([]);
-    const [roles, setRoles] = useState<{id: string, name: string, color: number}[]>([]);
+
     const [loading, setLoading] = useState(true);
     
     // New Config Form
@@ -41,7 +40,7 @@ export default function PojSettingsPage() {
                 setLoading(false);
             });
 
-        // Fetch channels and roles
+        // Fetch channels
         fetch(`${API_BASE}/api/guilds/${guildId}/info`, { credentials: 'include' })
             .then(res => res.ok ? res.json() : {})
             .then((data: any) => {
@@ -110,7 +109,7 @@ export default function PojSettingsPage() {
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-wide">Ping On Join (PoJ)</h1>
-                        <p className="text-slate-400">Notifica silenciosamente a un rol (Ghost Ping) cuando alguien entra</p>
+                        <p className="text-slate-400">Menciona silenciosamente (Ghost Ping) al usuario nuevo cuando entra al servidor</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -155,22 +154,20 @@ export default function PojSettingsPage() {
                         <Plus className="text-amber-400"/> Añadir Configuración
                     </h3>
                     
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-white/70">Selecciona el Canal (Ghost Ping)</label>
-                            <select
-                                value={selectedChannel}
-                                onChange={(e) => setSelectedChannel(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent transition-all"
-                            >
-                                <option value="" className="bg-[#12121a]">-- Selecciona --</option>
-                                {channels.map((ch: any) => (
-                                    <option key={ch.id} value={ch.id} className="bg-[#12121a]">
-                                        #{ch.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className="flex flex-col gap-2 mb-4">
+                        <label className="text-sm font-medium text-white/70">Selecciona el Canal</label>
+                        <select
+                            value={selectedChannel}
+                            onChange={(e) => setSelectedChannel(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent transition-all"
+                        >
+                            <option value="" className="bg-[#12121a]">-- Selecciona --</option>
+                            {channels.map((ch: any) => (
+                                <option key={ch.id} value={ch.id} className="bg-[#12121a]">
+                                    #{ch.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <button 

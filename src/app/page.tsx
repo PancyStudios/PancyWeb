@@ -1,7 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import UserButton from "@/components/UserButton"; // Importamos el componente
-
+import UserButton from "@/components/UserButton";
+import { Gear, ShieldCheck, MagicWand, Lightning, CurrencyDollar, Disc, MusicNotes, Diamond } from "phosphor-react";
 export default function Home() {
 	return (
 		<div className="relative">
@@ -24,7 +26,7 @@ export default function Home() {
 
 					<div className="hidden md:flex gap-8 text-sm font-medium text-gray-400">
 						<Link href="#musica" className="hover:text-cyan-400 transition-colors">Sonido</Link>
-						<Link href="#economia" className="hover:text-fuchsia-400 transition-colors">Economía</Link>
+						<Link href="#funciones" className="hover:text-fuchsia-400 transition-colors">Sistemas</Link>
 					</div>
 
 					<div className="flex items-center gap-4">
@@ -59,7 +61,7 @@ export default function Home() {
 							</a>
 							{/* Aquí usamos Link para ir al dashboard, que será manejado por middleware/page.tsx */}
 							<Link href="/dashboard" className="glass-panel text-gray-300 px-8 py-4 rounded-xl font-bold text-lg hover:text-white hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2">
-								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+								<Gear size={20} weight="fill" />
 								Configurar Bot
 							</Link>
 						</div>
@@ -78,11 +80,11 @@ export default function Home() {
 									className="object-contain drop-shadow-2xl"
 								/>
 							</div>
-							<div className="absolute top-0 right-10 w-16 h-16 glass-panel rounded-2xl flex items-center justify-center animate-bounce" style={{ animationDuration: "3s" }}>
-								<span className="text-2xl">🎵</span>
+							<div className="absolute top-0 right-10 w-16 h-16 glass-panel rounded-2xl flex items-center justify-center animate-bounce text-cyan-400" style={{ animationDuration: "3s" }}>
+								<MusicNotes size={28} weight="fill" />
 							</div>
-							<div className="absolute bottom-10 left-0 w-20 h-20 glass-panel rounded-full flex items-center justify-center animate-bounce" style={{ animationDuration: "4s", animationDelay: "1s" }}>
-								<span className="text-3xl">💎</span>
+							<div className="absolute bottom-10 left-0 w-20 h-20 glass-panel rounded-full flex items-center justify-center animate-bounce text-fuchsia-400" style={{ animationDuration: "4s", animationDelay: "1s" }}>
+								<Diamond size={32} weight="fill" />
 							</div>
 						</div>
 					</div>
@@ -119,7 +121,9 @@ export default function Home() {
 									))}
 								</div>
 								<div className="mt-4 flex items-center gap-4">
-									<div className="w-12 h-12 bg-gray-800 rounded-md flex items-center justify-center">💿</div>
+									<div className="w-12 h-12 bg-gray-800 rounded-md flex items-center justify-center text-cyan-400">
+										<Disc size={24} weight="fill" />
+									</div>
 									<div>
 										<div className="text-sm text-white font-bold">Transmitiendo...</div>
 										<div className="text-xs text-cyan-400">Fuente: Deezer Direct</div>
@@ -141,32 +145,32 @@ export default function Home() {
 
 					<div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
 						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]">
-							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20 group-hover:scale-110 transition-transform">
-								<span className="text-3xl text-black font-bold">$</span>
+							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20 group-hover:scale-110 transition-transform text-white">
+								<CurrencyDollar size={32} weight="bold" />
 							</div>
 							<h3 className="text-xl font-bold text-white mb-3">Economía Galáctica</h3>
 							<p className="text-sm text-gray-400">Sistema monetario global. Trabaja en las minas de asteroides, comercia y conviértete en el magnate del servidor.</p>
 						</div>
 
 						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform">
-								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform text-white">
+								<ShieldCheck size={32} />
 							</div>
 							<h3 className="text-xl font-bold text-white mb-3">Defensa & Seguridad</h3>
 							<p className="text-sm text-gray-400">Protocolos de moderación avanzados. Baneos temporales, purga de mensajes y logs de seguridad.</p>
 						</div>
 
 						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform text-white">
+								<MagicWand size={32} />
 							</div>
 							<h3 className="text-xl font-bold text-white mb-3">Utilidades Extras</h3>
 							<p className="text-sm text-gray-400">Herramientas para la tripulación. Avatares, información de usuario y comandos divertidos para amenizar el viaje.</p>
 						</div>
 
 						<div className="glass-panel p-8 rounded-2xl text-center group transition-all duration-300 hover:bg-white/10 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
-							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
-								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+							<div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform text-white">
+								<Lightning size={32} />
 							</div>
 							<h3 className="text-xl font-bold text-white mb-3">Niveles & Prestigio</h3>
 							<p className="text-sm text-gray-400">Sistema de experiencia nativo. Gana EXP chateando, lidera el leaderboard de tu servidor y desbloquea beneficios exclusivos.</p>

@@ -25,8 +25,6 @@ import {
 	Copy,
 	Gauge,
 	HandWaving,
-	Gear,
-	CheckCircle,
 	Cards,
 	BellRinging
 } from 'phosphor-react';
@@ -157,7 +155,7 @@ export default function ServerDashboardPage() {
 				}
 
 				const apiInt = Date.now()
-				const apiRes = await fetch(`${API_BASE}`)
+				await fetch(`${API_BASE}`)
 				const apiLat = Date.now() - apiInt
 				setPing(apiLat)
 

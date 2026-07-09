@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { MusicNotes, Faders, SpeakerHigh, Disc, SkipForward, Pause, Play, Queue, FloppyDisk } from 'phosphor-react';
 import { useSocket } from '@/context/SocketContext';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const API_BASE = "https://api.pancy.miau.media";
 
@@ -188,23 +188,6 @@ export default function MusicPage() {
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-            <Toaster
-                position="bottom-right"
-                toastOptions={{
-                    style: {
-                        background: '#1e293b',
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                    },
-                    success: {
-                        iconTheme: {
-                            primary: '#ec4899',
-                            secondary: '#fff',
-                        },
-                    },
-                }}
-            />
-
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
