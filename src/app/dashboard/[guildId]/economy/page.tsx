@@ -44,8 +44,18 @@ export default function LocalEconomyConfigPage() {
     const [saveStatus, setSaveStatus] = useState<string | null>(null);
     
     // New item form
-    const [showNewItemForm, setShowNewItemForm] = useState(false);
-    const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, emoji: '📦' });
+    const [newItem, setNewItem] = useState({ 
+        name: '', 
+        description: '', 
+        price: 0, 
+        sell_price: 0,
+        emoji: '📦',
+        type: 'item',
+        stock: -1,
+        role_id: '',
+        effect: 'NONE',
+        effect_value: 0
+    });
 
     useEffect(() => {
         if (!guildId) return;
@@ -99,7 +109,7 @@ export default function LocalEconomyConfigPage() {
             if (res.ok) {
                 const createdItem = await res.json();
                 setItems([...items, createdItem]);
-                setNewItem({ name: '', description: '', price: 0, emoji: '📦' });
+                setNewItem({ name: '', description: '', price: 0, sell_price: 0, emoji: '📦', type: 'item', stock: -1, role_id: '', effect: 'NONE', effect_value: 0 });
                 setShowNewItemForm(false);
             }
         } catch (error) {
@@ -251,25 +261,69 @@ export default function LocalEconomyConfigPage() {
                     <div className="space-y-4 relative z-10">
                         {showNewItemForm && (
                             <form onSubmit={handleCreateItem} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-4 mb-4">
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="col-span-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
                                         <label className="text-xs text-slate-400">Nombre</label>
                                         <input required type="text" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
                                             value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
                                     </div>
                                     <div>
+                                        <label className="text-xs text-slate-400">Descripción</label>
+                                        <input type="text" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                            value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div>
                                         <label className="text-xs text-slate-400">Emoji</label>
                                         <input type="text" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
                                             value={newItem.emoji} onChange={e => setNewItem({...newItem, emoji: e.target.value})} />
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-slate-400">Stock (-1 = Ilimitado)</label>
+                                        <input required type="number" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                            value={newItem.stock} onChange={e => setNewItem({...newItem, stock: parseInt(e.target.value)})} />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-400">Tipo (Legacy)</label>
+                                        <select className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                            value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value})}>
+                                            <option value="item">Objeto Normal</option>
+                                            <option value="role">Rol</option>
+                                        </select>
+                                    </div>
                                     <div>
                                         <label className="text-xs text-slate-400">Precio</label>
                                         <input required type="number" min="0" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
                                             value={newItem.price} onChange={e => setNewItem({...newItem, price: parseInt(e.target.value) || 0})} />
                                     </div>
-                                    <div className="flex items-end">
+                                    <div>
+                                        <label className="text-xs text-slate-400">Precio de Venta</label>
+                                        <input type="number" min="0" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                            value={newItem.sell_price} onChange={e => setNewItem({...newItem, sell_price: parseInt(e.target.value) || 0})} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="text-xs text-slate-400">Efecto Especial</label>
+                                        <select className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                            value={newItem.effect} onChange={e => setNewItem({...newItem, effect: e.target.value})}>
+                                            <option value="NONE">Ninguno</option>
+                                            <option value="EXPAND_BANK">Expandir Banco</option>
+                                            <option value="GIVE_ROLE">Otorgar Rol</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-400">Valor del Efecto / ID del Rol</label>
+                                        {newItem.effect === 'GIVE_ROLE' ? (
+                                            <input type="text" placeholder="ID del Rol" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                                value={newItem.role_id} onChange={e => setNewItem({...newItem, role_id: e.target.value})} />
+                                        ) : (
+                                            <input type="number" placeholder="Ej. 1000" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                                                value={newItem.effect_value} onChange={e => setNewItem({...newItem, effect_value: parseInt(e.target.value) || 0})} />
+                                        )}
+                                    </div>
+                                    <div className="flex items-end mt-4 md:mt-0 col-span-1">
                                         <button type="submit" className="w-full py-2 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors">
                                             Añadir Objeto
                                         </button>
@@ -287,9 +341,13 @@ export default function LocalEconomyConfigPage() {
                                         <div className="flex items-center gap-3">
                                             <div className="text-2xl">{item.emoji}</div>
                                             <div>
-                                                <div className="font-bold text-white text-sm">{item.name}</div>
-                                                <div className="text-xs text-yellow-400 font-mono flex items-center gap-1">
-                                                    {item.price} {config.currencySymbol}
+                                                <div className="font-bold text-white text-sm flex items-center gap-2">
+                                                    {item.name}
+                                                    {item.type === 'role' && <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">ROL</span>}
+                                                </div>
+                                                <div className="text-xs text-yellow-400 font-mono flex items-center gap-3">
+                                                    <span>{item.price} {config.currencySymbol}</span>
+                                                    {item.stock !== -1 && <span className="text-slate-400">Stock: {item.stock}</span>}
                                                 </div>
                                             </div>
                                         </div>

@@ -35,8 +35,18 @@ export default function DeveloperGlobalEconomyPage() {
     const [editBank, setEditBank] = useState(0);
     
     // New item form
-    const [showNewItemForm, setShowNewItemForm] = useState(false);
-    const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, emoji: '📦' });
+    const [newItem, setNewItem] = useState({ 
+        name: '', 
+        description: '', 
+        price: 0, 
+        sell_price: 0,
+        emoji: '📦',
+        type: 'item',
+        stock: -1,
+        role_id: '',
+        effect: 'NONE',
+        effect_value: 0
+    });
     
     // UI states
     const [activeTab, setActiveTab] = useState<'users' | 'items'>('users');
@@ -96,7 +106,7 @@ export default function DeveloperGlobalEconomyPage() {
             if (res.ok) {
                 const createdItem = await res.json();
                 setItems([...items, createdItem]);
-                setNewItem({ name: '', description: '', price: 0, emoji: '📦' });
+                setNewItem({ name: '', description: '', price: 0, sell_price: 0, emoji: '📦', type: 'item', stock: -1, role_id: '', effect: 'NONE', effect_value: 0 });
                 setShowNewItemForm(false);
             }
         } catch (error) {
@@ -310,25 +320,72 @@ export default function DeveloperGlobalEconomyPage() {
                             {showNewItemForm && (
                                 <form onSubmit={handleCreateItem} className="p-6 bg-[#0e0a1f]/60 border border-fuchsia-500/20 rounded-3xl space-y-4">
                                     <h3 className="text-lg font-bold text-white mb-2">Crear Objeto Global</h3>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="col-span-2">
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
                                             <label className="text-xs text-slate-400 font-bold uppercase">Nombre</label>
                                             <input required type="text" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
                                                 value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
                                         </div>
                                         <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Descripción</label>
+                                            <input type="text" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div>
                                             <label className="text-xs text-slate-400 font-bold uppercase">Emoji</label>
                                             <input type="text" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
                                                 value={newItem.emoji} onChange={e => setNewItem({...newItem, emoji: e.target.value})} />
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Stock (-1 = Ilimitado)</label>
+                                            <input required type="number" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                value={newItem.stock} onChange={e => setNewItem({...newItem, stock: parseInt(e.target.value)})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Tipo (Legacy)</label>
+                                            <select className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value})}>
+                                                <option value="item">Objeto Normal</option>
+                                                <option value="role">Rol</option>
+                                            </select>
+                                        </div>
                                         <div>
                                             <label className="text-xs text-slate-400 font-bold uppercase">Precio (Stars)</label>
                                             <input required type="number" min="0" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
                                                 value={newItem.price} onChange={e => setNewItem({...newItem, price: parseInt(e.target.value) || 0})} />
                                         </div>
-                                        <div className="flex items-end">
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Precio de Venta</label>
+                                            <input type="number" min="0" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                value={newItem.sell_price} onChange={e => setNewItem({...newItem, sell_price: parseInt(e.target.value) || 0})} />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Efecto Especial</label>
+                                            <select className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                value={newItem.effect} onChange={e => setNewItem({...newItem, effect: e.target.value})}>
+                                                <option value="NONE">Ninguno</option>
+                                                <option value="EXPAND_BANK">Expandir Banco</option>
+                                                <option value="GIVE_ROLE">Otorgar Rol</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">Valor del Efecto / ID del Rol</label>
+                                            {newItem.effect === 'GIVE_ROLE' ? (
+                                                <input type="text" placeholder="ID del Rol" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                    value={newItem.role_id} onChange={e => setNewItem({...newItem, role_id: e.target.value})} />
+                                            ) : (
+                                                <input type="number" placeholder="Ej. 1000" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
+                                                    value={newItem.effect_value} onChange={e => setNewItem({...newItem, effect_value: parseInt(e.target.value) || 0})} />
+                                            )}
+                                        </div>
+                                        <div className="flex items-end mt-2 md:mt-0 col-span-1">
                                             <button type="submit" className="w-full py-3 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-fuchsia-500/20">
                                                 Añadir Objeto
                                             </button>
@@ -351,9 +408,19 @@ export default function DeveloperGlobalEconomyPage() {
                                                     <Trash size={18} weight="bold" />
                                                 </button>
                                             </div>
-                                            <h4 className="font-bold text-white text-lg">{item.name}</h4>
-                                            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-500/10 text-yellow-400 text-sm font-bold rounded-lg border border-yellow-500/20">
-                                                <CurrencyCircleDollar size={16} /> {item.price} Stars
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-bold text-white text-lg">{item.name}</h4>
+                                                {item.type === 'role' && <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">ROL</span>}
+                                            </div>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-500/10 text-yellow-400 text-sm font-bold rounded-lg border border-yellow-500/20">
+                                                    <CurrencyCircleDollar size={16} /> {item.price} Stars
+                                                </div>
+                                                {item.stock !== -1 && (
+                                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-fuchsia-500/10 text-fuchsia-400 text-sm font-bold rounded-lg border border-fuchsia-500/20">
+                                                        Stock: {item.stock}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
