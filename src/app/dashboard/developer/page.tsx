@@ -49,6 +49,7 @@ export default function DeveloperGlobalEconomyPage() {
     const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
     const [botStatus, setBotStatus] = useState<Record<string, boolean>>({ stable: false, canary: false, legacy: false });
     const [premiumData, setPremiumData] = useState<{ users: any[], guilds: any[], codes: any[] }>({ users: [], guilds: [], codes: [] });
+    const [botStats, setBotStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
@@ -75,7 +76,7 @@ export default function DeveloperGlobalEconomyPage() {
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     
     // UI states
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'items' | 'guilds' | 'blacklist' | 'premium'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'items' | 'guilds' | 'blacklist' | 'premium' | 'analytics' | 'badges' | 'config' | 'broadcast' | 'console'>('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [userData, setUserData] = useState<any>(null);
     
@@ -90,18 +91,25 @@ export default function DeveloperGlobalEconomyPage() {
     
     // Blacklist Form
     const [newBlacklist, setNewBlacklist] = useState({ guildId: '', reason: '' });
+    
+    // Config, Broadcast, Logs
+    const [botConfig, setBotConfig] = useState<{ maintenanceMode: boolean, disabledCommands: string[] }>({ maintenanceMode: false, disabledCommands: [] });
+    const [broadcastForm, setBroadcastForm] = useState({ title: '', description: '', color: '#A855F7', imageUrl: '' });
+    const [logs, setLogs] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchDevData = async () => {
             try {
-                const [userRes, devUsersRes, devItemsRes, guildsRes, blacklistRes, statusRes, premiumRes] = await Promise.all([
+                const [userRes, devUsersRes, devItemsRes, guildsRes, blacklistRes, statusRes, premiumRes, botStatsRes, configRes] = await Promise.all([
                     fetch(`${API_BASE}/api/users`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/economy/users`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/economy/items`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/guilds`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/blacklist`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/status`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/api/dev/premium`, { credentials: 'include' })
+                    fetch(`${API_BASE}/api/dev/premium`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/stats`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/config`, { credentials: 'include' })
                 ]);
                 if (userRes.ok) setUserData(await userRes.json());
                 if (devUsersRes.ok) setUsers(await devUsersRes.json());
@@ -110,6 +118,15 @@ export default function DeveloperGlobalEconomyPage() {
                 if (blacklistRes.ok) setBlacklist(await blacklistRes.json());
                 if (statusRes.ok) setBotStatus(await statusRes.json());
                 if (premiumRes.ok) setPremiumData(await premiumRes.json());
+                if (configRes.ok) setBotConfig(await configRes.json());
+                if (botStatsRes.ok) {
+                    const parsedStats = await botStatsRes.json();
+                    if (typeof parsedStats === 'string') {
+                        setBotStats(JSON.parse(parsedStats));
+                    } else {
+                        setBotStats(parsedStats);
+                    }
+                }
             } catch (err) {
                 console.error("Error loading dev data:", err);
             } finally {
@@ -118,6 +135,25 @@ export default function DeveloperGlobalEconomyPage() {
         };
         fetchDevData();
     }, []);
+
+    // Polling logs if active
+    useEffect(() => {
+        let interval: any;
+        if (activeTab === 'console') {
+            const fetchLogs = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/api/dev/logs`, { credentials: 'include' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setLogs(data.logs || []);
+                    }
+                } catch (e) {}
+            };
+            fetchLogs();
+            interval = setInterval(fetchLogs, 3000); // refresh every 3s
+        }
+        return () => clearInterval(interval);
+    }, [activeTab]);
 
     const handleSaveUser = async () => {
         if (!editingUser) return;
@@ -313,8 +349,18 @@ export default function DeveloperGlobalEconomyPage() {
                     >
                         <ChartBar size={18} weight={activeTab === 'overview' ? 'fill' : 'regular'} /> Overview
                     </button>
+                    <button
+                        onClick={() => { setActiveTab('analytics'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'analytics'
+                                ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 shadow-lg shadow-indigo-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Desktop size={18} weight={activeTab === 'analytics' ? 'fill' : 'regular'} /> Rendimiento (Stats)
+                    </button>
 
-                    <div className="px-3 text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2 mt-4">Suscripciones</div>
+                    <div className="px-3 text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2 mt-4">Suscripciones & Beneficios</div>
                     <button
                         onClick={() => { setActiveTab('premium'); setSidebarOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
@@ -325,30 +371,18 @@ export default function DeveloperGlobalEconomyPage() {
                     >
                         <CurrencyCircleDollar size={18} weight={activeTab === 'premium' ? 'fill' : 'regular'} /> Premium & Códigos
                     </button>
+                    <button
+                        onClick={() => { setActiveTab('badges'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'badges'
+                                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/20 shadow-lg shadow-orange-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Shield size={18} weight={activeTab === 'badges' ? 'fill' : 'regular'} /> Insignias (Badges)
+                    </button>
 
                     <div className="px-3 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 mt-6">Administración Global</div>
-                    <button
-                        onClick={() => { setActiveTab('guilds'); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
-                            activeTab === 'guilds'
-                                ? 'bg-blue-500/15 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/10'
-                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                        }`}
-                    >
-                        <Desktop size={16} /> Servidores (Guilds)
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('blacklist'); setSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
-                            activeTab === 'blacklist'
-                                ? 'bg-blue-500/15 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/10'
-                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                        }`}
-                    >
-                        <Shield size={16} /> Blacklist Global
-                    </button>
-
-                    <div className="px-3 text-[10px] font-black text-purple-600 uppercase tracking-widest mb-2 mt-6">Economía Global</div>
                     <button
                         onClick={() => { setActiveTab('users'); setSidebarOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
@@ -360,6 +394,28 @@ export default function DeveloperGlobalEconomyPage() {
                         <Users size={16} /> Usuarios
                     </button>
                     <button
+                        onClick={() => { setActiveTab('guilds'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'guilds'
+                                ? 'bg-blue-500/15 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Globe size={18} weight={activeTab === 'guilds' ? 'fill' : 'regular'} /> Servidores
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('broadcast'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'broadcast'
+                                ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 shadow-lg shadow-indigo-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Globe size={18} weight={activeTab === 'broadcast' ? 'fill' : 'regular'} /> Anuncios (Broadcast)
+                    </button>
+
+                    <div className="px-3 text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2 mt-4">Economía Global</div>
+                    <button
                         onClick={() => { setActiveTab('items'); setSidebarOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
                             activeTab === 'items'
@@ -368,6 +424,38 @@ export default function DeveloperGlobalEconomyPage() {
                         }`}
                     >
                         <Package size={16} /> Objetos de Tienda
+                    </button>
+
+                    <div className="px-3 text-[10px] font-black text-red-600 uppercase tracking-widest mb-2 mt-6">Emergencia & Logs</div>
+                    <button
+                        onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'config'
+                                ? 'bg-red-500/15 text-red-300 border border-red-500/20 shadow-lg shadow-red-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Shield size={18} weight={activeTab === 'config' ? 'fill' : 'regular'} /> Controles de Emergencia
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('console'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'console'
+                                ? 'bg-zinc-500/15 text-zinc-300 border border-zinc-500/20 shadow-lg shadow-zinc-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Terminal size={18} weight={activeTab === 'console' ? 'fill' : 'regular'} /> Consola en Vivo
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('blacklist'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'blacklist'
+                                ? 'bg-red-500/15 text-red-300 border border-red-500/20 shadow-lg shadow-red-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <XCircle size={18} weight={activeTab === 'blacklist' ? 'fill' : 'regular'} /> Blacklist
                     </button>
                 </nav>
 
@@ -571,6 +659,215 @@ export default function DeveloperGlobalEconomyPage() {
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: ANALYTICS */}
+                    {activeTab === 'analytics' && (
+                        <div className="max-w-6xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <Desktop size={28} className="text-indigo-400" /> Rendimiento del Bot
+                                </h2>
+                                <p className="text-slate-400 mt-1">Métricas en tiempo real desde el core de Go.</p>
+                            </div>
+
+                            {botStats ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Uso de Memoria (RAM)</div>
+                                        <div className="text-4xl font-black text-white">{botStats.memory?.toFixed(2) || 0} MB</div>
+                                    </div>
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Latencia (Ping)</div>
+                                        <div className="text-4xl font-black text-white">{botStats.ping || '0ms'}</div>
+                                    </div>
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Uptime (Activo)</div>
+                                        <div className="text-4xl font-black text-white">{((botStats.uptime || 0) / 1000 / 60 / 60).toFixed(1)} hrs</div>
+                                    </div>
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Base de Datos</div>
+                                        <div className="text-3xl font-black text-white flex items-center gap-2">
+                                            <span className={`w-3 h-3 rounded-full ${botStats.database === 'Conectado' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                            {botStats.database || 'Desconectado'}
+                                        </div>
+                                    </div>
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Canales Cacheados</div>
+                                        <div className="text-4xl font-black text-white">{botStats.channels?.toLocaleString() || 0}</div>
+                                    </div>
+                                    <div className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-center">
+                                        <div className="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-xs">Plataforma & Core</div>
+                                        <div className="text-xl font-bold text-slate-300">{botStats.platform} {botStats.arch}</div>
+                                        <div className="text-sm text-slate-500">{botStats.nodeVersion}</div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-slate-400">Estadísticas no disponibles o bot desconectado.</div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* TAB: BADGES */}
+                    {activeTab === 'badges' && (
+                        <div className="max-w-6xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <Shield size={28} className="text-orange-400" /> Insignias y Logros
+                                </h2>
+                                <p className="text-slate-400 mt-1">Asigna o retira insignias especiales a los usuarios.</p>
+                            </div>
+
+                            <div className="bg-[#0e0a1f]/80 border border-orange-500/20 rounded-3xl p-6 shadow-xl shadow-orange-500/5">
+                                <h3 className="text-lg font-bold text-white mb-4">Gestor de Perfil</h3>
+                                <div className="flex gap-4">
+                                    <input type="text" id="badgeUserId" placeholder="ID del Usuario" className="flex-1 bg-[#080611] border border-orange-500/20 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" />
+                                    <button onClick={async () => {
+                                        const input = document.getElementById('badgeUserId') as HTMLInputElement;
+                                        if(!input.value) return;
+                                        setSaving(true);
+                                        try {
+                                            const res = await fetch(`${API_BASE}/api/dev/badges/${input.value}`, { credentials: 'include' });
+                                            if (res.ok) {
+                                                const data = await res.json();
+                                                alert(`Usuario encontrado. Insignias actuales:\n${data.badges.join(', ') || 'Ninguna'}`);
+                                                // Minimalist approach for now: alert existing, then prompt for new array
+                                                const newBadgesStr = prompt("Nuevas insignias (separadas por coma, deja vacío para limpiar):", data.badges.join(','));
+                                                if (newBadgesStr !== null) {
+                                                    const newArr = newBadgesStr.split(',').map(s=>s.trim()).filter(Boolean);
+                                                    const res2 = await fetch(`${API_BASE}/api/dev/badges/${input.value}`, {
+                                                        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                                                        body: JSON.stringify({ badges: newArr })
+                                                    });
+                                                    if (res2.ok) alert("Insignias actualizadas correctamente.");
+                                                }
+                                            } else {
+                                                alert("Usuario no encontrado en la DB de antiRF.");
+                                            }
+                                        } finally { setSaving(false); }
+                                    }} className="bg-orange-500 text-black font-bold px-6 py-3 rounded-xl hover:bg-orange-400 transition-colors flex items-center gap-2">
+                                        <MagnifyingGlass size={18} weight="bold" /> Buscar y Editar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: CONFIG (Emergencia) */}
+                    {activeTab === 'config' && (
+                        <div className="max-w-4xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <Shield size={28} className="text-red-400" /> Controles de Emergencia
+                                </h2>
+                                <p className="text-slate-400 mt-1">Configuración global del sistema. Cuidado con lo que tocas aquí.</p>
+                            </div>
+
+                            <div className="bg-[#0e0a1f]/80 border border-red-500/20 rounded-3xl p-6 shadow-xl shadow-red-500/5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">Modo Mantenimiento Global</h3>
+                                        <p className="text-slate-400 text-sm">Bloquea todos los comandos (excepto desarrolladores).</p>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            const newVal = !botConfig.maintenanceMode;
+                                            setSaving(true);
+                                            try {
+                                                const res = await fetch(`${API_BASE}/api/dev/config`, {
+                                                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                                                    body: JSON.stringify({ maintenanceMode: newVal })
+                                                });
+                                                if (res.ok) setBotConfig({ ...botConfig, maintenanceMode: newVal });
+                                            } finally { setSaving(false); }
+                                        }}
+                                        className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors ${botConfig.maintenanceMode ? 'bg-red-500' : 'bg-slate-700'}`}
+                                    >
+                                        <div className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform ${botConfig.maintenanceMode ? 'translate-x-6' : ''}`}></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: BROADCAST */}
+                    {activeTab === 'broadcast' && (
+                        <div className="max-w-4xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <Globe size={28} className="text-indigo-400" /> Anuncio Global
+                                </h2>
+                                <p className="text-slate-400 mt-1">Envía un mensaje a todos los servidores (System Channel).</p>
+                            </div>
+
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                if(!broadcastForm.title || !broadcastForm.description) return alert("Título y Descripción obligatorios");
+                                setSaving(true);
+                                try {
+                                    const res = await fetch(`${API_BASE}/api/dev/broadcast`, {
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                                        body: JSON.stringify(broadcastForm)
+                                    });
+                                    if (res.ok) {
+                                        alert("Anuncio enviado correctamente.");
+                                        setBroadcastForm({ title: '', description: '', color: '#A855F7', imageUrl: '' });
+                                    }
+                                } finally { setSaving(false); }
+                            }} className="bg-[#0e0a1f]/80 border border-indigo-500/20 rounded-3xl p-6 shadow-xl space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-300 mb-1">Título</label>
+                                    <input type="text" value={broadcastForm.title} onChange={e => setBroadcastForm({...broadcastForm, title: e.target.value})} className="w-full bg-[#080611] border border-indigo-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-indigo-500" required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-300 mb-1">Descripción</label>
+                                    <textarea value={broadcastForm.description} onChange={e => setBroadcastForm({...broadcastForm, description: e.target.value})} rows={4} className="w-full bg-[#080611] border border-indigo-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-indigo-500" required />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-300 mb-1">Color (Hex)</label>
+                                        <input type="color" value={broadcastForm.color} onChange={e => setBroadcastForm({...broadcastForm, color: e.target.value})} className="w-full h-10 bg-[#080611] border border-indigo-500/20 rounded-xl cursor-pointer" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-300 mb-1">URL Imagen (Opcional)</label>
+                                        <input type="url" value={broadcastForm.imageUrl} onChange={e => setBroadcastForm({...broadcastForm, imageUrl: e.target.value})} className="w-full bg-[#080611] border border-indigo-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-indigo-500" />
+                                    </div>
+                                </div>
+                                <button type="submit" disabled={saving} className="w-full bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-400 transition-colors mt-4">
+                                    {saving ? 'Enviando...' : 'Enviar Anuncio a Todos los Servidores'}
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* TAB: CONSOLE */}
+                    {activeTab === 'console' && (
+                        <div className="max-w-6xl h-full flex flex-col space-y-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <Terminal size={28} className="text-zinc-400" /> Consola en Vivo
+                                </h2>
+                                <p className="text-slate-400 mt-1">Registros emitidos en tiempo real por PancyBotGo (via MQTT).</p>
+                            </div>
+                            
+                            <div className="flex-1 bg-black border border-zinc-800 rounded-xl p-4 font-mono text-sm overflow-y-auto h-[600px] shadow-inner shadow-black relative">
+                                {logs.length === 0 ? (
+                                    <div className="text-zinc-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">Esperando logs...</div>
+                                ) : (
+                                    logs.map((log, i) => {
+                                        // log might be a string if sent directly, or an object { message, env, timestamp }
+                                        let msg = typeof log.message === 'string' ? log.message : JSON.stringify(log);
+                                        return (
+                                            <div key={i} className="mb-1">
+                                                <span className="text-zinc-500">[{new Date(log.timestamp || Date.now()).toLocaleTimeString()}]</span>
+                                                <span className="text-purple-400 ml-2">[{log.env || 'unknown'}]</span>
+                                                <span className="text-zinc-300 ml-2 whitespace-pre-wrap">{msg.replace(/\x1b\[[0-9;]*m/g, '')}</span>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     )}
