@@ -47,6 +47,8 @@ export default function DeveloperGlobalEconomyPage() {
     const [items, setItems] = useState<GlobalItem[]>([]);
     const [guilds, setGuilds] = useState<BotGuild[]>([]);
     const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
+    const [botStatus, setBotStatus] = useState<Record<string, boolean>>({ stable: false, canary: false, legacy: false });
+    const [premiumData, setPremiumData] = useState<{ users: any[], guilds: any[], codes: any[] }>({ users: [], guilds: [], codes: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
@@ -73,7 +75,7 @@ export default function DeveloperGlobalEconomyPage() {
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     
     // UI states
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'items' | 'guilds' | 'blacklist'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'items' | 'guilds' | 'blacklist' | 'premium'>('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [userData, setUserData] = useState<any>(null);
     
@@ -92,18 +94,22 @@ export default function DeveloperGlobalEconomyPage() {
     useEffect(() => {
         const fetchDevData = async () => {
             try {
-                const [userRes, devUsersRes, devItemsRes, guildsRes, blacklistRes] = await Promise.all([
+                const [userRes, devUsersRes, devItemsRes, guildsRes, blacklistRes, statusRes, premiumRes] = await Promise.all([
                     fetch(`${API_BASE}/api/users`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/economy/users`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/economy/items`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/guilds`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/api/dev/blacklist`, { credentials: 'include' })
+                    fetch(`${API_BASE}/api/dev/blacklist`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/status`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/premium`, { credentials: 'include' })
                 ]);
                 if (userRes.ok) setUserData(await userRes.json());
                 if (devUsersRes.ok) setUsers(await devUsersRes.json());
                 if (devItemsRes.ok) setItems(await devItemsRes.json());
                 if (guildsRes.ok) setGuilds(await guildsRes.json());
                 if (blacklistRes.ok) setBlacklist(await blacklistRes.json());
+                if (statusRes.ok) setBotStatus(await statusRes.json());
+                if (premiumRes.ok) setPremiumData(await premiumRes.json());
             } catch (err) {
                 console.error("Error loading dev data:", err);
             } finally {
@@ -282,6 +288,19 @@ export default function DeveloperGlobalEconomyPage() {
                     </div>
                 </div>
 
+                <div className="px-6 py-4 border-b border-purple-500/10 flex flex-col gap-2 bg-black/20">
+                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Estado de Entornos</div>
+                    <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                        Estable <span className={`w-2 h-2 rounded-full ${botStatus.stable ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
+                    </div>
+                    <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                        Canary <span className={`w-2 h-2 rounded-full ${botStatus.canary ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
+                    </div>
+                    <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                        Legacy <span className={`w-2 h-2 rounded-full ${botStatus.legacy ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
+                    </div>
+                </div>
+
                 <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto">
                     <div className="px-3 text-[10px] font-black text-fuchsia-600 uppercase tracking-widest mb-2 mt-2">Métricas</div>
                     <button
@@ -292,7 +311,19 @@ export default function DeveloperGlobalEconomyPage() {
                                 : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                         }`}
                     >
-                        <ChartBar size={16} /> Resumen General
+                        <ChartBar size={18} weight={activeTab === 'overview' ? 'fill' : 'regular'} /> Overview
+                    </button>
+
+                    <div className="px-3 text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2 mt-4">Suscripciones</div>
+                    <button
+                        onClick={() => { setActiveTab('premium'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'premium'
+                                ? 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/20 shadow-lg shadow-yellow-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <CurrencyCircleDollar size={18} weight={activeTab === 'premium' ? 'fill' : 'regular'} /> Premium & Códigos
                     </button>
 
                     <div className="px-3 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 mt-6">Administración Global</div>
@@ -424,6 +455,121 @@ export default function DeveloperGlobalEconomyPage() {
                                         <span className="font-bold text-sm uppercase tracking-wider">Miembros</span>
                                     </div>
                                     <div className="text-4xl font-black text-white">{stats.totalMembers.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: PREMIUM */}
+                    {activeTab === 'premium' && (
+                        <div className="max-w-6xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <CurrencyCircleDollar size={28} className="text-yellow-400" /> Premium & Códigos
+                                </h2>
+                                <p className="text-slate-400 mt-1">Gestiona suscripciones premium para usuarios y servidores, y genera nuevos códigos.</p>
+                            </div>
+
+                            {/* Generador de Códigos */}
+                            <div className="bg-[#0e0a1f]/80 border border-yellow-500/20 rounded-3xl p-6 shadow-xl shadow-yellow-500/5">
+                                <h3 className="text-lg font-bold text-white mb-4">Generar Código Premium</h3>
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const fd = new FormData(e.currentTarget);
+                                    const isPerm = fd.get('permanent') === 'true';
+                                    const body = {
+                                        type: fd.get('type'),
+                                        duration_days: isPerm ? 0 : Number(fd.get('duration')),
+                                        permanent: isPerm
+                                    };
+                                    setSaving(true);
+                                    try {
+                                        const res = await fetch(`${API_BASE}/api/dev/premium/code`, {
+                                            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body)
+                                        });
+                                        if (res.ok) {
+                                            const code = await res.json();
+                                            setPremiumData(p => ({ ...p, codes: [...p.codes, code] }));
+                                        }
+                                    } finally { setSaving(false); }
+                                }} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Tipo</label>
+                                        <select name="type" className="w-full bg-[#080611] border border-yellow-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-yellow-500">
+                                            <option value="user">Usuario</option>
+                                            <option value="guild">Servidor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Duración</label>
+                                        <select name="permanent" id="permSelect" className="w-full bg-[#080611] border border-yellow-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-yellow-500" onChange={(e) => {
+                                            const input = document.getElementById('durInput') as HTMLInputElement;
+                                            if (e.target.value === 'true') { input.disabled = true; input.value = ''; }
+                                            else { input.disabled = false; input.value = '30'; }
+                                        }}>
+                                            <option value="false">Temporal (Días)</option>
+                                            <option value="true">Permanente</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Días</label>
+                                        <input type="number" name="duration" id="durInput" defaultValue={30} className="w-full bg-[#080611] border border-yellow-500/20 rounded-xl px-4 py-2 text-white outline-none focus:border-yellow-500 disabled:opacity-50" />
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button type="submit" disabled={saving} className="w-full bg-yellow-500 text-black font-bold px-6 py-2 rounded-xl hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2">
+                                            <Plus size={18} weight="bold" /> Generar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Códigos */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-bold text-white flex items-center gap-2"><Package size={20} className="text-yellow-400" /> Códigos Generados</h3>
+                                    {premiumData.codes.length === 0 ? <p className="text-slate-500">No hay códigos.</p> : premiumData.codes.map(c => (
+                                        <div key={c._id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <code className="text-yellow-400 font-bold bg-yellow-500/10 px-2 py-1 rounded">{c._id}</code>
+                                                <button onClick={async () => {
+                                                    await fetch(`${API_BASE}/api/dev/premium/code/${c._id}`, { method: 'DELETE', credentials: 'include' });
+                                                    setPremiumData(p => ({ ...p, codes: p.codes.filter(x => x._id !== c._id) }));
+                                                }} className="text-red-400 hover:text-red-300"><Trash size={18}/></button>
+                                            </div>
+                                            <div className="text-xs text-slate-400">Tipo: {c.type === 'user' ? 'Usuario' : 'Servidor'} | {c.permanent ? 'Permanente' : `${c.duration_days} días`}</div>
+                                            <div className="text-[10px] text-slate-500 mt-1">Estado: {c.is_claimed ? 'Canjeado' : 'Disponible'} {c.is_claimed && `por ${c.claimed_by}`}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Suscripciones */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-bold text-white flex items-center gap-2"><Globe size={20} className="text-blue-400" /> Suscripciones Activas</h3>
+                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                                        {premiumData.users.map(u => (
+                                            <div key={u.User} className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 flex justify-between items-center">
+                                                <div>
+                                                    <div className="text-sm font-bold text-purple-300 flex items-center gap-1"><Users size={14}/> {u.User}</div>
+                                                    <div className="text-xs text-slate-400">{u.Permanent ? 'Permanente' : `Expira: ${new Date(u.Expira).toLocaleDateString()}`}</div>
+                                                </div>
+                                                <button onClick={async () => {
+                                                    await fetch(`${API_BASE}/api/dev/premium/user/${u.User}`, { method: 'DELETE', credentials: 'include' });
+                                                    setPremiumData(p => ({ ...p, users: p.users.filter(x => x.User !== u.User) }));
+                                                }} className="text-red-400 p-1 hover:bg-red-500/20 rounded"><Trash size={16}/></button>
+                                            </div>
+                                        ))}
+                                        {premiumData.guilds.map(g => (
+                                            <div key={g.Guild} className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex justify-between items-center">
+                                                <div>
+                                                    <div className="text-sm font-bold text-blue-300 flex items-center gap-1"><Desktop size={14}/> {g.Guild}</div>
+                                                    <div className="text-xs text-slate-400">{g.Permanent ? 'Permanente' : `Expira: ${new Date(g.Expira).toLocaleDateString()}`}</div>
+                                                </div>
+                                                <button onClick={async () => {
+                                                    await fetch(`${API_BASE}/api/dev/premium/guild/${g.Guild}`, { method: 'DELETE', credentials: 'include' });
+                                                    setPremiumData(p => ({ ...p, guilds: p.guilds.filter(x => x.Guild !== g.Guild) }));
+                                                }} className="text-red-400 p-1 hover:bg-red-500/20 rounded"><Trash size={16}/></button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
