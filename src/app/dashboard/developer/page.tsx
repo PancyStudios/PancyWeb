@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CurrencyCircleDollar, Terminal, CheckCircle, Package, Trash, Plus, MagnifyingGlass, Users, Bank } from 'phosphor-react';
+import { ArrowLeft, CurrencyCircleDollar, Terminal, CheckCircle, Package, Trash, Plus, MagnifyingGlass, Users, Bank, Shield, ChartBar, Desktop, Globe, XCircle } from 'phosphor-react';
 
 const API_BASE = "https://api.pancy.miau.media";
 
@@ -26,9 +26,27 @@ interface GlobalItem {
     effect_value?: number;
 }
 
+interface BotGuild {
+    id: string;
+    name: string;
+    icon: string;
+    memberCount: number;
+}
+
+interface BlacklistEntry {
+    guildId: string;
+    guildName: string;
+    reason: string;
+    addedBy: string;
+    addedAt: number;
+    active: boolean;
+}
+
 export default function DeveloperGlobalEconomyPage() {
     const [users, setUsers] = useState<GlobalUser[]>([]);
     const [items, setItems] = useState<GlobalItem[]>([]);
+    const [guilds, setGuilds] = useState<BotGuild[]>([]);
+    const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
@@ -55,23 +73,39 @@ export default function DeveloperGlobalEconomyPage() {
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     
     // UI states
-    const [activeTab, setActiveTab] = useState<'users' | 'items'>('users');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'items' | 'guilds' | 'blacklist'>('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [userData, setUserData] = useState<any>(null);
+    
+    // Pagination and search
+    const [guildSearch, setGuildSearch] = useState('');
+    const [guildPage, setGuildPage] = useState(1);
+    const GUILDS_PER_PAGE = 30;
+
+    const [userSearch, setUserSearch] = useState('');
+    const [userPage, setUserPage] = useState(1);
+    const USERS_PER_PAGE = 20;
+    
+    // Blacklist Form
+    const [newBlacklist, setNewBlacklist] = useState({ guildId: '', reason: '' });
 
     useEffect(() => {
         const fetchDevData = async () => {
             try {
-                const [userRes, devUsersRes, devItemsRes] = await Promise.all([
+                const [userRes, devUsersRes, devItemsRes, guildsRes, blacklistRes] = await Promise.all([
                     fetch(`${API_BASE}/api/users`, { credentials: 'include' }),
                     fetch(`${API_BASE}/api/dev/economy/users`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/api/dev/economy/items`, { credentials: 'include' })
+                    fetch(`${API_BASE}/api/dev/economy/items`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/guilds`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/api/dev/blacklist`, { credentials: 'include' })
                 ]);
                 if (userRes.ok) setUserData(await userRes.json());
                 if (devUsersRes.ok) setUsers(await devUsersRes.json());
                 if (devItemsRes.ok) setItems(await devItemsRes.json());
+                if (guildsRes.ok) setGuilds(await guildsRes.json());
+                if (blacklistRes.ok) setBlacklist(await blacklistRes.json());
             } catch (err) {
-                console.error("Error loading dev economy:", err);
+                console.error("Error loading dev data:", err);
             } finally {
                 setLoading(false);
             }
@@ -99,6 +133,74 @@ export default function DeveloperGlobalEconomyPage() {
         }
         setSaving(false);
     };
+
+    const handleAddBlacklist = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newBlacklist.guildId) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/dev/guilds/${newBlacklist.guildId}/blacklist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ reason: newBlacklist.reason, guildName: 'Desconocido' })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setBlacklist([data.entry, ...blacklist.filter(b => b.guildId !== newBlacklist.guildId)]);
+                setNewBlacklist({ guildId: '', reason: '' });
+            }
+        } catch (err) {
+            console.error("Error adding to blacklist:", err);
+        }
+        setSaving(false);
+    };
+
+    const handleRemoveBlacklist = async (guildId: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/api/dev/guilds/${guildId}/blacklist`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                setBlacklist(blacklist.filter(b => b.guildId !== guildId));
+            }
+        } catch (err) {
+            console.error("Error removing from blacklist:", err);
+        }
+    };
+
+    const stats = useMemo(() => {
+        return {
+            totalStars: users.reduce((acc, u) => acc + (u.stars_wallet || 0) + (u.stars_bank || 0), 0),
+            totalUsers: users.length,
+            totalItems: items.length,
+            totalGuilds: guilds.length,
+            totalMembers: guilds.reduce((acc, g) => acc + (g.memberCount || 0), 0)
+        };
+    }, [users, items, guilds]);
+
+    const filteredGuilds = useMemo(() => {
+        if (!guildSearch) return guilds;
+        return guilds.filter(g => g.name.toLowerCase().includes(guildSearch.toLowerCase()) || g.id.includes(guildSearch));
+    }, [guilds, guildSearch]);
+
+    const paginatedGuilds = useMemo(() => {
+        const start = (guildPage - 1) * GUILDS_PER_PAGE;
+        return filteredGuilds.slice(start, start + GUILDS_PER_PAGE);
+    }, [filteredGuilds, guildPage]);
+    const totalGuildPages = Math.ceil(filteredGuilds.length / GUILDS_PER_PAGE);
+
+    const filteredUsers = useMemo(() => {
+        if (!userSearch) return users;
+        return users.filter(u => u._id.includes(userSearch));
+    }, [users, userSearch]);
+
+    const paginatedUsers = useMemo(() => {
+        const start = (userPage - 1) * USERS_PER_PAGE;
+        return filteredUsers.slice(start, start + USERS_PER_PAGE);
+    }, [filteredUsers, userPage]);
+    const totalUserPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
 
     const handleCreateItem = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -181,7 +283,41 @@ export default function DeveloperGlobalEconomyPage() {
                 </div>
 
                 <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto">
-                    <div className="px-3 text-[10px] font-black text-purple-600 uppercase tracking-widest mb-2 mt-2">Economía Global</div>
+                    <div className="px-3 text-[10px] font-black text-fuchsia-600 uppercase tracking-widest mb-2 mt-2">Métricas</div>
+                    <button
+                        onClick={() => { setActiveTab('overview'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'overview'
+                                ? 'bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/20 shadow-lg shadow-fuchsia-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <ChartBar size={16} /> Resumen General
+                    </button>
+
+                    <div className="px-3 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 mt-6">Administración Global</div>
+                    <button
+                        onClick={() => { setActiveTab('guilds'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'guilds'
+                                ? 'bg-blue-500/15 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Desktop size={16} /> Servidores (Guilds)
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('blacklist'); setSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
+                            activeTab === 'blacklist'
+                                ? 'bg-blue-500/15 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                        }`}
+                    >
+                        <Shield size={16} /> Blacklist Global
+                    </button>
+
+                    <div className="px-3 text-[10px] font-black text-purple-600 uppercase tracking-widest mb-2 mt-6">Economía Global</div>
                     <button
                         onClick={() => { setActiveTab('users'); setSidebarOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm font-bold ${
@@ -250,17 +386,193 @@ export default function DeveloperGlobalEconomyPage() {
                 </header>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth">
+                    {/* TAB: OVERVIEW */}
+                    {activeTab === 'overview' && (
+                        <div className="max-w-6xl space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                                    <ChartBar size={28} className="text-fuchsia-400" /> Resumen Global
+                                </h2>
+                                <p className="text-slate-400 mt-1">Visión general del estado actual del bot y la economía intergaláctica.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="p-6 rounded-3xl bg-gradient-to-br from-purple-500/10 to-[#0e0a1f] border border-purple-500/20 flex flex-col justify-center">
+                                    <div className="flex items-center gap-3 text-purple-400 mb-2">
+                                        <CurrencyCircleDollar size={24} />
+                                        <span className="font-bold text-sm uppercase tracking-wider">Total Stars</span>
+                                    </div>
+                                    <div className="text-4xl font-black text-white">{stats.totalStars.toLocaleString()}</div>
+                                </div>
+                                <div className="p-6 rounded-3xl bg-gradient-to-br from-fuchsia-500/10 to-[#0e0a1f] border border-fuchsia-500/20 flex flex-col justify-center">
+                                    <div className="flex items-center gap-3 text-fuchsia-400 mb-2">
+                                        <Users size={24} />
+                                        <span className="font-bold text-sm uppercase tracking-wider">Cuentas Eco</span>
+                                    </div>
+                                    <div className="text-4xl font-black text-white">{stats.totalUsers.toLocaleString()}</div>
+                                </div>
+                                <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-500/10 to-[#0e0a1f] border border-blue-500/20 flex flex-col justify-center">
+                                    <div className="flex items-center gap-3 text-blue-400 mb-2">
+                                        <Desktop size={24} />
+                                        <span className="font-bold text-sm uppercase tracking-wider">Servidores</span>
+                                    </div>
+                                    <div className="text-4xl font-black text-white">{stats.totalGuilds.toLocaleString()}</div>
+                                </div>
+                                <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-[#0e0a1f] border border-emerald-500/20 flex flex-col justify-center">
+                                    <div className="flex items-center gap-3 text-emerald-400 mb-2">
+                                        <Globe size={24} />
+                                        <span className="font-bold text-sm uppercase tracking-wider">Miembros</span>
+                                    </div>
+                                    <div className="text-4xl font-black text-white">{stats.totalMembers.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: GUILDS */}
+                    {activeTab === 'guilds' && (
+                        <div className="max-w-6xl space-y-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-white flex items-center gap-2">
+                                        <Desktop size={22} className="text-blue-400" /> Servidores del Bot
+                                    </h2>
+                                    <p className="text-slate-400 text-sm">Lista de todos los servidores donde se encuentra el bot. Haz clic para administrar.</p>
+                                </div>
+                                <div className="relative">
+                                    <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar por ID o Nombre..." 
+                                        value={guildSearch}
+                                        onChange={(e) => { setGuildSearch(e.target.value); setGuildPage(1); }}
+                                        className="pl-10 pr-4 py-2 bg-[#0e0a1f] border border-blue-500/20 rounded-xl text-white text-sm focus:outline-none focus:border-blue-400 w-full md:w-64"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {paginatedGuilds.length === 0 ? (
+                                    <div className="col-span-full p-8 text-center text-slate-500 border border-white/5 rounded-3xl">No hay servidores que coincidan con la búsqueda.</div>
+                                ) : (
+                                    paginatedGuilds.map(guild => (
+                                        <Link href={`/dashboard/developer/${guild.id}`} key={guild.id} className="p-4 rounded-2xl bg-[#0e0a1f]/60 border border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all group flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-full overflow-hidden bg-black shrink-0 border border-blue-500/20 group-hover:border-blue-400">
+                                                {guild.icon ? (
+                                                    <img src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`} className="w-full h-full object-cover" alt="Icon" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-white font-bold bg-blue-900">{guild.name.charAt(0)}</div>
+                                                )}
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <h4 className="font-bold text-white text-sm truncate">{guild.name}</h4>
+                                                <div className="text-xs text-slate-400 font-mono mt-0.5">{guild.id}</div>
+                                                <div className="text-xs text-blue-400 mt-1 font-bold flex items-center gap-1"><Users size={12}/> {guild.memberCount} miembros</div>
+                                            </div>
+                                        </Link>
+                                    ))
+                                )}
+                            </div>
+
+                            {totalGuildPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-8">
+                                    <button onClick={() => setGuildPage(p => Math.max(1, p - 1))} disabled={guildPage === 1} className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <ArrowLeft size={16} />
+                                    </button>
+                                    <span className="text-sm text-slate-400 font-mono">
+                                        Página {guildPage} de {totalGuildPages}
+                                    </span>
+                                    <button onClick={() => setGuildPage(p => Math.min(totalGuildPages, p + 1))} disabled={guildPage === totalGuildPages} className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <ArrowLeft size={16} className="rotate-180" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* TAB: BLACKLIST */}
+                    {activeTab === 'blacklist' && (
+                        <div className="max-w-5xl space-y-8">
+                            <div>
+                                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                                    <Shield size={22} className="text-red-400" /> Blacklist Global
+                                </h2>
+                                <p className="text-slate-400 text-sm mt-1">Servidores que tienen prohibido el uso del bot.</p>
+                            </div>
+
+                            <form onSubmit={handleAddBlacklist} className="p-6 bg-red-900/10 border border-red-500/20 rounded-3xl space-y-4">
+                                <h3 className="text-lg font-bold text-white">Añadir Servidor a Blacklist</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs text-slate-400 font-bold uppercase">ID del Servidor</label>
+                                        <input required type="text" className="w-full bg-[#080611] border border-red-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-400 mt-1"
+                                            value={newBlacklist.guildId} onChange={e => setNewBlacklist({...newBlacklist, guildId: e.target.value})} placeholder="Ej. 123456789012345678" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-400 font-bold uppercase">Razón (Opcional)</label>
+                                        <input type="text" className="w-full bg-[#080611] border border-red-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-400 mt-1"
+                                            value={newBlacklist.reason} onChange={e => setNewBlacklist({...newBlacklist, reason: e.target.value})} placeholder="Razón del bloqueo" />
+                                    </div>
+                                </div>
+                                <button type="submit" disabled={saving} className="px-6 py-3 bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white border border-red-500/30 rounded-xl font-bold transition-colors flex items-center gap-2">
+                                    <Shield size={18} weight="bold" /> Bloquear Servidor
+                                </button>
+                            </form>
+
+                            <div className="space-y-3">
+                                {blacklist.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-500 border border-white/5 rounded-3xl">No hay servidores en la blacklist.</div>
+                                ) : (
+                                    blacklist.map(entry => (
+                                        <div key={entry.guildId} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-[#0e0a1f]/60 border border-red-500/20">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-bold text-white">{entry.guildName || 'Desconocido'}</h4>
+                                                    <span className="text-xs font-mono text-slate-400 bg-black/30 px-2 py-0.5 rounded-lg border border-white/10">{entry.guildId}</span>
+                                                </div>
+                                                <p className="text-sm text-red-400 mt-1">Razón: <span className="text-slate-300">{entry.reason}</span></p>
+                                                <div className="text-xs text-slate-500 mt-2">
+                                                    Añadido el {new Date(entry.addedAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            <button onClick={() => handleRemoveBlacklist(entry.guildId)} className="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shrink-0">
+                                                <XCircle size={16} /> Quitar de Blacklist
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* TAB: USERS */}
                     {activeTab === 'users' && (
                         <div className="max-w-5xl space-y-6">
-                            <h2 className="text-xl font-black text-white flex items-center gap-2">
-                                <Users size={22} className="text-purple-400" /> Usuarios de Economía Global
-                            </h2>
-                            <p className="text-slate-400 text-sm">Gestiona los fondos (Stars) de los usuarios a nivel global.</p>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-white flex items-center gap-2">
+                                        <Users size={22} className="text-purple-400" /> Usuarios de Economía Global
+                                    </h2>
+                                    <p className="text-slate-400 text-sm">Gestiona los fondos (Stars) de los usuarios a nivel global.</p>
+                                </div>
+                                <div className="relative">
+                                    <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar por ID..." 
+                                        value={userSearch}
+                                        onChange={(e) => { setUserSearch(e.target.value); setUserPage(1); }}
+                                        className="pl-10 pr-4 py-2 bg-[#0e0a1f] border border-purple-500/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-400 w-full md:w-64"
+                                    />
+                                </div>
+                            </div>
                             
                             <div className="space-y-2">
-                                {users.map(user => (
-                                    <div key={user._id} className="flex items-center justify-between p-4 rounded-2xl bg-[#0e0a1f]/60 border border-purple-500/10 hover:border-purple-500/30 transition-all">
+                                {paginatedUsers.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-500 border border-white/5 rounded-3xl">No se encontraron usuarios.</div>
+                                ) : (
+                                    paginatedUsers.map(user => (
+                                        <div key={user._id} className="flex items-center justify-between p-4 rounded-2xl bg-[#0e0a1f]/60 border border-purple-500/10 hover:border-purple-500/30 transition-all">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
                                                 <Users size={20} weight="fill" />
@@ -284,8 +596,23 @@ export default function DeveloperGlobalEconomyPage() {
                                             Editar Fondos
                                         </button>
                                     </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
+
+                            {totalUserPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-6">
+                                    <button onClick={() => setUserPage(p => Math.max(1, p - 1))} disabled={userPage === 1} className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <ArrowLeft size={16} />
+                                    </button>
+                                    <span className="text-sm text-slate-400 font-mono">
+                                        Página {userPage} de {totalUserPages}
+                                    </span>
+                                    <button onClick={() => setUserPage(p => Math.min(totalUserPages, p + 1))} disabled={userPage === totalUserPages} className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <ArrowLeft size={16} className="rotate-180" />
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Editar Fondos Modal */}
                             {editingUser && (
