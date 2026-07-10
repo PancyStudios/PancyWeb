@@ -35,6 +35,7 @@ export default function DeveloperGlobalEconomyPage() {
     const [editBank, setEditBank] = useState(0);
     
     // New item form
+    const [showNewItemForm, setShowNewItemForm] = useState(false);
     const [newItem, setNewItem] = useState({ 
         name: '', 
         description: '', 

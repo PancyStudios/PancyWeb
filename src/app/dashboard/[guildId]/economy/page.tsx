@@ -44,6 +44,7 @@ export default function LocalEconomyConfigPage() {
     const [saveStatus, setSaveStatus] = useState<string | null>(null);
     
     // New item form
+    const [showNewItemForm, setShowNewItemForm] = useState(false);
     const [newItem, setNewItem] = useState({ 
         name: '', 
         description: '', 
