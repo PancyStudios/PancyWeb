@@ -26,7 +26,8 @@ import {
 	Gauge,
 	HandWaving,
 	Cards,
-	BellRinging
+	BellRinging,
+	CurrencyCircleDollar
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -443,6 +444,11 @@ export default function ServerDashboardPage() {
 						<Wrench size={20} className="text-slate-300 group-hover:scale-110 transition-transform" weight="duotone" />
 						<span className="font-medium">Configuración</span>
 					</Link>
+
+					<Link href={`/dashboard/${guildId}/economy`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<CurrencyCircleDollar size={20} className="text-yellow-400 group-hover:scale-110 transition-transform" weight="duotone" />
+						<span className="font-medium">Economía Local</span>
+					</Link>
 				</nav>
 
 				<div className="p-6 border-t border-white/5 bg-black/20 mt-auto shrink-0">
@@ -748,6 +754,29 @@ export default function ServerDashboardPage() {
 									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
 										<HandWaving size={20} weight="bold" />
 										Gestionar Saludos
+									</div>
+								</div>
+							</Link>
+
+							{/* 6. ECONOMY */}
+							<Link href={`/dashboard/${guildId}/economy`} className="glass-panel p-8 rounded-3xl relative group cursor-pointer overflow-hidden h-full border-t border-white/10 hover:border-yellow-500/30 block">
+								<div className="absolute -right-6 -top-6 text-yellow-500/5 group-hover:text-yellow-500/10 transition-colors duration-500">
+									<CurrencyCircleDollar size={150} weight="fill" className="transform rotate-12" />
+								</div>
+
+								<div className="relative z-10 flex flex-col h-full">
+									<div className="w-14 h-14 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-yellow-500/10">
+										<CurrencyCircleDollar size={32} weight="fill" />
+									</div>
+
+									<h3 className="text-2xl font-bold text-white mb-3 group-hover:text-yellow-300 transition-colors">Economía Local</h3>
+									<p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">
+										Administra la moneda del servidor, recompensas de trabajo, crímenes y la tienda de objetos.
+									</p>
+
+									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+										<CurrencyCircleDollar size={20} weight="bold" />
+										Gestionar Economía
 									</div>
 								</div>
 							</Link>

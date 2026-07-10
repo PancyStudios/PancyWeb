@@ -9,7 +9,8 @@ import {
 	CurrencyCircleDollar,
 	Bank,
 	Trophy,
-	Medal
+	Medal,
+	Terminal
 } from 'phosphor-react';
 import { redirect } from "next/navigation";
 
@@ -122,6 +123,16 @@ export default function GlobalEconomyPage() {
 						<CurrencyCircleDollar size={20} weight="fill" />
 						<span className="font-medium">Economía Global</span>
 					</Link>
+					
+					{userData?.isDeveloper && (
+						<>
+							<div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Administración</div>
+							<Link href="/dashboard/developer" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-purple-400 hover:text-purple-300 transition-all">
+								<Terminal size={20} weight="fill" />
+								<span className="font-medium">Panel Developer</span>
+							</Link>
+						</>
+					)}
 				</nav>
 
 				<div className="p-4 border-t border-white/5 bg-black/20">
