@@ -21,6 +21,9 @@ interface GlobalItem {
     type: string;
     emoji: string;
     stock: number;
+    role_id?: string;
+    effect?: string;
+    effect_value?: number;
 }
 
 export default function DeveloperGlobalEconomyPage() {
@@ -37,6 +40,7 @@ export default function DeveloperGlobalEconomyPage() {
     // New item form
     const [showNewItemForm, setShowNewItemForm] = useState(false);
     const [newItem, setNewItem] = useState({ 
+        id: '',
         name: '', 
         description: '', 
         price: 0, 
@@ -48,6 +52,7 @@ export default function DeveloperGlobalEconomyPage() {
         effect: 'NONE',
         effect_value: 0
     });
+    const [editingItemId, setEditingItemId] = useState<string | null>(null);
     
     // UI states
     const [activeTab, setActiveTab] = useState<'users' | 'items'>('users');
@@ -98,20 +103,29 @@ export default function DeveloperGlobalEconomyPage() {
     const handleCreateItem = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${API_BASE}/api/dev/economy/items`, {
-                method: 'POST',
+            const isEdit = editingItemId !== null;
+            const url = isEdit ? `${API_BASE}/api/dev/economy/items/${editingItemId}` : `${API_BASE}/api/dev/economy/items`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(newItem)
             });
             if (res.ok) {
-                const createdItem = await res.json();
-                setItems([...items, createdItem]);
-                setNewItem({ name: '', description: '', price: 0, sell_price: 0, emoji: '📦', type: 'item', stock: -1, role_id: '', effect: 'NONE', effect_value: 0 });
+                const savedItem = await res.json();
+                if (isEdit) {
+                    setItems(items.map(i => i._id === editingItemId ? savedItem : i));
+                } else {
+                    setItems([...items, savedItem]);
+                }
+                setNewItem({ id: '', name: '', description: '', price: 0, sell_price: 0, emoji: '📦', type: 'item', stock: -1, role_id: '', effect: 'NONE', effect_value: 0 });
                 setShowNewItemForm(false);
+                setEditingItemId(null);
             }
         } catch (error) {
-            console.error("Error creating global item:", error);
+            console.error("Error saving global item:", error);
         }
     };
 
@@ -313,16 +327,25 @@ export default function DeveloperGlobalEconomyPage() {
                                     </h2>
                                     <p className="text-slate-400 text-sm mt-1">Crea y administra objetos de la tienda intergaláctica.</p>
                                 </div>
-                                <button onClick={() => setShowNewItemForm(!showNewItemForm)} className="px-4 py-2 bg-fuchsia-500/20 text-fuchsia-400 hover:bg-fuchsia-500/30 rounded-xl font-bold text-sm transition-colors flex items-center gap-2">
+                                <button onClick={() => {
+                                    setEditingItemId(null);
+                                    setNewItem({ id: '', name: '', description: '', price: 0, sell_price: 0, emoji: '📦', type: 'item', stock: -1, role_id: '', effect: 'NONE', effect_value: 0 });
+                                    setShowNewItemForm(!showNewItemForm);
+                                }} className="px-4 py-2 bg-fuchsia-500/20 text-fuchsia-400 hover:bg-fuchsia-500/30 rounded-xl font-bold text-sm transition-colors flex items-center gap-2">
                                     <Plus size={16} weight="bold" /> Nuevo Objeto
                                 </button>
                             </div>
 
                             {showNewItemForm && (
                                 <form onSubmit={handleCreateItem} className="p-6 bg-[#0e0a1f]/60 border border-fuchsia-500/20 rounded-3xl space-y-4">
-                                    <h3 className="text-lg font-bold text-white mb-2">Crear Objeto Global</h3>
+                                    <h3 className="text-lg font-bold text-white mb-2">{editingItemId ? 'Editar Objeto Global' : 'Crear Objeto Global'}</h3>
                                     
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="text-xs text-slate-400 font-bold uppercase">ID Personalizado (Opcional)</label>
+                                            <input type="text" disabled={editingItemId !== null} className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1 disabled:opacity-50"
+                                                value={newItem.id} onChange={e => setNewItem({...newItem, id: e.target.value})} placeholder="Ej. mid-espada" />
+                                        </div>
                                         <div>
                                             <label className="text-xs text-slate-400 font-bold uppercase">Nombre</label>
                                             <input required type="text" className="w-full bg-[#080611] border border-fuchsia-500/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-400 mt-1"
@@ -388,7 +411,7 @@ export default function DeveloperGlobalEconomyPage() {
                                         </div>
                                         <div className="flex items-end mt-2 md:mt-0 col-span-1">
                                             <button type="submit" className="w-full py-3 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-fuchsia-500/20">
-                                                Añadir Objeto
+                                                {editingItemId ? 'Guardar Cambios' : 'Añadir Objeto'}
                                             </button>
                                         </div>
                                     </div>
@@ -405,9 +428,30 @@ export default function DeveloperGlobalEconomyPage() {
                                                 <div className="w-14 h-14 rounded-2xl bg-fuchsia-500/20 flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(217,70,239,0.1)]">
                                                     {item.emoji}
                                                 </div>
-                                                <button onClick={() => handleDeleteItem(item._id)} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors opacity-0 group-hover:opacity-100">
-                                                    <Trash size={18} weight="bold" />
-                                                </button>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => {
+                                                        setEditingItemId(item._id);
+                                                        setNewItem({
+                                                            id: item._id,
+                                                            name: item.name,
+                                                            description: item.description,
+                                                            price: item.price,
+                                                            sell_price: item.sell_price,
+                                                            emoji: item.emoji,
+                                                            type: item.type,
+                                                            stock: item.stock,
+                                                            role_id: item.role_id || '',
+                                                            effect: item.effect || 'NONE',
+                                                            effect_value: item.effect_value || 0
+                                                        });
+                                                        setShowNewItemForm(true);
+                                                    }} className="p-2 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-xl transition-colors">
+                                                        <span className="text-xs font-bold">Editar</span>
+                                                    </button>
+                                                    <button onClick={() => handleDeleteItem(item._id)} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
+                                                        <Trash size={18} weight="bold" />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <h4 className="font-bold text-white text-lg">{item.name}</h4>
