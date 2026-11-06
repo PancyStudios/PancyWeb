@@ -27,7 +27,8 @@ import {
 	HandWaving,
 	Cards,
 	BellRinging,
-	CurrencyCircleDollar
+	CurrencyCircleDollar,
+	Archive
 } from 'phosphor-react';
 
 // --- TIPOS ---
@@ -420,6 +421,11 @@ export default function ServerDashboardPage() {
 						<span className="font-medium">Seguridad / Anti-Raid</span>
 					</Link>
 
+					<Link href={`/dashboard/${guildId}/backups`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
+						<Archive size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" weight="duotone" />
+						<span className="font-medium">Backups & Restore</span>
+					</Link>
+
 					<Link href={`/dashboard/${guildId}/logs`} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group mb-1">
 						<Scroll size={20} className="text-amber-400 group-hover:scale-110 transition-transform" weight="duotone" />
 						<span className="font-medium">Logs & Auditoría</span>
@@ -777,6 +783,52 @@ export default function ServerDashboardPage() {
 									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
 										<CurrencyCircleDollar size={20} weight="bold" />
 										Gestionar Economía
+									</div>
+								</div>
+							</Link>
+
+							{/* 7. SEGURIDAD Y ANTI-RAID */}
+							<Link href={`/dashboard/${guildId}/security`} className="glass-panel p-8 rounded-3xl relative group cursor-pointer overflow-hidden h-full border-t border-white/10 hover:border-orange-500/30 block">
+								<div className="absolute -right-6 -top-6 text-orange-500/5 group-hover:text-orange-500/10 transition-colors duration-500">
+									<ShieldCheck size={150} weight="fill" className="transform rotate-12" />
+								</div>
+
+								<div className="relative z-10 flex flex-col h-full">
+									<div className="w-14 h-14 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-orange-500/10">
+										<ShieldCheck size={32} weight="fill" />
+									</div>
+
+									<h3 className="text-2xl font-bold text-white mb-3 group-hover:text-orange-300 transition-colors">Anti-Raid & Verificación</h3>
+									<p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">
+										Defensa activa anti-raid/anti-nuke, modo pánico, bloqueo de bots, cuarentena y verificación web.
+									</p>
+
+									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+										<ShieldCheck size={20} weight="bold" />
+										Centro Anti-Raid
+									</div>
+								</div>
+							</Link>
+
+							{/* 8. COPIAS DE SEGURIDAD (BACKUPS) */}
+							<Link href={`/dashboard/${guildId}/backups`} className="glass-panel p-8 rounded-3xl relative group cursor-pointer overflow-hidden h-full border-t border-white/10 hover:border-cyan-500/30 block">
+								<div className="absolute -right-6 -top-6 text-cyan-500/5 group-hover:text-cyan-500/10 transition-colors duration-500">
+									<Archive size={150} weight="fill" className="transform rotate-12" />
+								</div>
+
+								<div className="relative z-10 flex flex-col h-full">
+									<div className="w-14 h-14 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-cyan-500/10">
+										<Archive size={32} weight="fill" />
+									</div>
+
+									<h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">Backups & Restauración</h3>
+									<p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">
+										Captura instantáneas del servidor, descarga archivos .pbackup y restaura con vista previa y diario transaccional.
+									</p>
+
+									<div className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+										<Archive size={20} weight="bold" />
+										Gestionar Backups
 									</div>
 								</div>
 							</Link>
